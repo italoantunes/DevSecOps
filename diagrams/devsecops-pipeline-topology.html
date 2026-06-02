@@ -243,6 +243,19 @@ body {
 }
 .leg-item { display: flex; align-items: center; gap: 7px; font-size: 10px; color: #94a3b8; }
 .leg-dot  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── CARD NOTE ── */
+.card-note {
+  font-size: 9.5px;
+  color: #94a3b8;
+  background: rgba(255,255,255,0.04);
+  border-left: 2px solid #334155;
+  border-radius: 0 4px 4px 0;
+  padding: 5px 8px;
+  margin-top: 6px;
+  line-height: 1.5;
+  font-style: italic;
+}
 .leg-sla  { font-size: 10px; color: #ffffff; font-weight: 500; }
 
 </style>
@@ -277,35 +290,42 @@ body {
 <!-- ═══════════════════════════════════════════ DEV LOCAL ════ -->
 <div class="zone zone-dev">
   <span class="zone-label">DEV LOCAL — máquina do desenvolvedor</span>
+
   <div class="cards-row">
 
-    <div class="card card-blue">
+    <div class="card card-blue" style="flex: 1;">
       <div class="card-step">ETAPA 01-A</div>
       <div class="card-icon">🖥️</div>
       <div class="card-title">IDE + Plugins de Segurança</div>
-      <div class="card-desc">Feedback em tempo real enquanto o código é digitado. Vulnerabilidade encontrada aqui tem custo zero de correção.</div>
+      <div class="card-desc">Feedback em tempo real enquanto o código é digitado. Vulnerabilidade encontrada aqui tem custo zero de correção — o dev corrige antes mesmo de salvar o arquivo.</div>
       <div class="card-tools">
         SonarLint<br>
         Snyk IDE<br>
         Semgrep Extension
       </div>
       <span class="gate gate-info">📊 Alerta inline na IDE</span>
+      <div class="card-note">
+        Princípio do <strong style="color:#93c5fd;">Shift-Left</strong>: corrigir aqui custa próximo de zero. Em produção, o mesmo problema pode custar 100x mais. É o primeiro elo do <strong style="color:#93c5fd;">SSDLC</strong> — segurança integrada desde a fase de código.
+      </div>
     </div>
 
-    <div class="card card-violet">
+    <div class="card card-violet" style="flex: 1;">
       <div class="card-step">ETAPA 01-B</div>
       <div class="card-icon">🔐</div>
       <div class="card-title">Pre-commit Hook</div>
-      <div class="card-desc">Executa automaticamente antes de cada <code style="color:#c084fc;font-size:10px;">git commit</code>. Bloqueia o commit se encontrar problemas — nenhum código inseguro chega ao repositório.</div>
+      <div class="card-desc">Executa automaticamente antes de cada <code style="color:#c084fc;font-size:10px;">git commit</code>. Se encontrar problema, bloqueia — o código não sai da máquina.</div>
       <div class="card-tools">
         Gitleaks<br>
         detect-secrets<br>
         pre-commit framework
       </div>
       <span class="gate gate-block">🚫 Bloqueia o commit</span>
+      <div class="card-note">
+        Foco principal: <strong style="color:#c084fc;">credenciais expostas</strong> — senhas, tokens de API, chaves privadas e connection strings hardcoded no código. É o último filtro antes do código chegar ao repositório.
+      </div>
     </div>
 
-    <div class="card card-orange-soft" style="max-width:220px; flex: 0 0 auto;">
+    <div class="card card-orange-soft" style="flex: 1;">
       <div class="card-step">REPOSITÓRIO</div>
       <div class="card-icon">🐙</div>
       <div class="card-title">Git Repository</div>
@@ -316,9 +336,11 @@ body {
         Signed Commits
       </div>
       <span class="gate gate-alert">⚡ Dispara pipeline CI</span>
+      <div class="card-note">Branch Protection impede merge na main sem o pipeline ter passado — mesmo que alguém tente forçar.</div>
     </div>
 
   </div>
+
 </div>
 
 <div class="connector">
@@ -419,6 +441,7 @@ body {
         Cosign &nbsp;·&nbsp; SLSA &nbsp;·&nbsp; in-toto
       </div>
       <div class="bi-note">SBOM arquivado e vinculado a esta versão · Imutável no Artifact Registry</div>
+      <div class="card-note" style="margin-top:10px; max-width:420px; text-align:left;">A assinatura garante que o que foi testado no CI é exatamente o que vai para produção. Se alguém alterar a imagem depois do build, a assinatura quebra e o deploy é rejeitado.</div>
     </div>
   </div>
 </div>
@@ -445,6 +468,7 @@ body {
         Nuclei
       </div>
       <span class="gate gate-block">🚫 Bloqueia deploy prod</span>
+      <div class="card-note">Diferente do SAST: aqui a aplicação está rodando. O teste simula um atacante real tentando invadir — valida o que o código faz de fato, não só o que foi escrito.</div>
     </div>
 
     <div class="card card-purple">
@@ -458,6 +482,7 @@ body {
         Binary Authorization
       </div>
       <span class="gate gate-block">🚫 Pod sem assinatura</span>
+      <div class="card-note">Guardrail do Kubernetes. Nenhum container sobe em produção sem ter sido assinado pelo pipeline — mesmo que alguém tente fazer deploy manual.</div>
     </div>
 
     <div class="card card-indigo">
