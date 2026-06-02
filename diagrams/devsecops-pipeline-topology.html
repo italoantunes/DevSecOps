@@ -2,295 +2,589 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DevSecOps — Topologia de Segurança</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-  font-family: 'Segoe UI', monospace, sans-serif;
-  background: #0a0e1a;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: #080c18;
   color: #c8d0e8;
-  padding: 20px;
+  padding: 28px 32px 40px;
+  min-width: 1200px;
 }
-svg { display: block; width: 100%; max-width: 1100px; margin: 0 auto; height: auto; }
+
+/* ── HEADER ── */
+.header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #e2e8f8;
+  letter-spacing: 2px;
+}
+.header p {
+  font-size: 11px;
+  color: #ffffff;
+  letter-spacing: 1.5px;
+  margin-top: 5px;
+}
+
+/* ── FLOW PILL BAR ── */
+.flow-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+.step-pill {
+  background: #12172a;
+  border: 1px solid #2a3060;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #818cf8;
+  white-space: nowrap;
+}
+.step-arrow {
+  color: #2a3060;
+  font-size: 18px;
+  padding: 0 5px;
+  line-height: 1;
+}
+
+/* ── ZONE ── */
+.zone {
+  border-radius: 12px;
+  padding: 20px 16px 16px;
+  margin-bottom: 6px;
+  position: relative;
+}
+.zone-label {
+  position: absolute;
+  top: -11px;
+  left: 20px;
+  background: #080c18;
+  padding: 2px 14px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  border-radius: 4px;
+}
+
+.zone-dev  { border: 1.5px dashed #1e3a5c; }
+.zone-dev .zone-label { color: #3b82f6; }
+
+.zone-ci   { border: 1.5px dashed #14532d; }
+.zone-ci .zone-label { color: #22c55e; }
+
+.zone-build { border: 1.5px dashed #78350f; text-align: center; padding: 16px; }
+.zone-build .zone-label { color: #eab308; }
+
+.zone-cd   { border: 1.5px dashed #831843; }
+.zone-cd .zone-label { color: #f472b6; }
+
+.zone-prod { border: 1.5px dashed #1e1b4b; }
+.zone-prod .zone-label { color: #818cf8; }
+
+/* ── CARDS ROW ── */
+.cards-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+/* ── CARD ── */
+.card {
+  flex: 1;
+  border-radius: 10px;
+  padding: 14px 13px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.card-step {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  opacity: 0.55;
+}
+.card-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+.card-title {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.card-desc {
+  font-size: 10.5px;
+  color: #7a8090;
+  line-height: 1.5;
+  flex: 1;
+}
+.card-tools {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.6;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 7px;
+  margin-top: 2px;
+}
+.gate {
+  display: inline-block;
+  border-radius: 5px;
+  padding: 3px 9px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 2px;
+  align-self: flex-start;
+}
+.gate-block  { background: rgba(239,68,68,0.15);  color: #f87171; }
+.gate-alert  { background: rgba(234,179,8,0.14);  color: #fbbf24; }
+.gate-info   { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+.gate-detect { background: rgba(34,197,94,0.13);  color: #4ade80; }
+
+/* Card colour variants */
+.card-blue   { background:#0f1729; border:1.5px solid #3b82f6; }
+.card-blue   .card-title { color:#93c5fd; } .card-blue   .card-tools { color:#7dd3fc; }
+
+.card-violet { background:#130c28; border:1.5px solid #7c3aed; }
+.card-violet .card-title { color:#c084fc; } .card-violet .card-tools { color:#ddd6fe; }
+
+.card-orange-soft { background:#181006; border:1.5px solid #ea580c; }
+.card-orange-soft .card-title { color:#fb923c; } .card-orange-soft .card-tools { color:#fdba74; }
+
+.card-green  { background:#0a1a0c; border:1.5px solid #16a34a; }
+.card-green  .card-title { color:#4ade80; } .card-green  .card-tools { color:#86efac; }
+
+.card-lime   { background:#0d1a06; border:1.5px solid #65a30d; }
+.card-lime   .card-title { color:#bef264; } .card-lime   .card-tools { color:#d9f99d; }
+
+.card-cyan   { background:#061620; border:1.5px solid #0891b2; }
+.card-cyan   .card-title { color:#22d3ee; } .card-cyan   .card-tools { color:#67e8f9; }
+
+.card-orange { background:#180e04; border:1.5px solid #c2410c; }
+.card-orange .card-title { color:#fdba74; } .card-orange .card-tools { color:#fed7aa; }
+
+.card-purple { background:#130a1e; border:1.5px solid #9333ea; }
+.card-purple .card-title { color:#d8b4fe; } .card-purple .card-tools { color:#e9d5ff; }
+
+.card-pink   { background:#1c0814; border:1.5px solid #db2777; }
+.card-pink   .card-title { color:#f9a8d4; } .card-pink   .card-tools { color:#fbcfe8; }
+
+.card-yellow { background:#141208; border:1.5px solid #ca8a04; }
+.card-yellow .card-title { color:#fde047; } .card-yellow .card-tools { color:#fef08a; }
+
+.card-red    { background:#1a0808; border:1.5px solid #dc2626; }
+.card-red    .card-title { color:#fca5a5; } .card-red    .card-tools { color:#fecaca; }
+
+.card-indigo { background:#0a0c20; border:1.5px solid #4338ca; }
+.card-indigo .card-title { color:#a5b4fc; } .card-indigo .card-tools { color:#c7d2fe; }
+
+.card-slate  { background:#0c1020; border:1.5px solid #334155; }
+.card-slate  .card-title { color:#94a3b8; } .card-slate  .card-tools { color:#cbd5e1; }
+
+/* ── BUILD CARD ── */
+.build-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  background: #141208;
+  border: 1.5px solid #ca8a04;
+  border-radius: 12px;
+  padding: 16px 28px;
+}
+.build-inner .bi-icon { font-size: 32px; }
+.build-inner .bi-title { font-size: 15px; font-weight: 700; color: #fde047; }
+.build-inner .bi-tools { font-size: 11px; color: #fef08a; margin-top: 4px; line-height: 1.6; }
+.build-inner .bi-note  { font-size: 10px; color: #78700a; margin-top: 4px; }
+
+/* ── SECURITY TEAM BAR ── */
+.sec-bar {
+  background: #0f0820;
+  border: 1px solid #6d28d9;
+  border-radius: 7px;
+  padding: 9px 18px;
+  font-size: 11px;
+  color: #c084fc;
+  margin-top: 14px;
+  text-align: center;
+  line-height: 1.5;
+}
+.sec-bar strong { color: #e879f9; }
+
+/* ── ZONE CONNECTOR ── */
+.connector {
+  text-align: center;
+  padding: 7px 0 5px;
+}
+.connector .arrow { font-size: 28px; color: #ffffff; display: block; line-height: 1; font-weight: 900; }
+.connector .label { font-size: 10px; color: #ffffff; margin-top: 2px; font-weight: 500; }
+
+/* ── LEGEND ── */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: center;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid #12172a;
+}
+.leg-item { display: flex; align-items: center; gap: 7px; font-size: 10px; color: #94a3b8; }
+.leg-dot  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.leg-sla  { font-size: 10px; color: #ffffff; font-weight: 500; }
+
 </style>
 </head>
 <body>
-<svg viewBox="0 0 1100 820" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a1f35" stroke-width="0.8"/>
-    </pattern>
-    <filter id="glow-blue"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    <filter id="glow-green"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    <filter id="glow-orange"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    <filter id="glow-red"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    <filter id="glow-purple"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#3b82f6"/></marker>
-    <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#22c55e"/></marker>
-    <marker id="arr-orange" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#f97316"/></marker>
-    <marker id="arr-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ef4444"/></marker>
-    <marker id="arr-purple" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a855f7"/></marker>
-    <marker id="arr-cyan" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#06b6d4"/></marker>
-    <marker id="arr-yellow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#eab308"/></marker>
-  </defs>
 
-  <rect width="1100" height="820" fill="#0a0e1a"/>
-  <rect width="1100" height="820" fill="url(#grid)"/>
+<!-- HEADER -->
+<div class="header">
+  <h1>🔐 DevSecOps — Topologia de Segurança</h1>
+  <p>SHIFT-LEFT SECURITY · CI/CD PIPELINE · RUNTIME PROTECTION</p>
+</div>
 
-  <text x="550" y="28" text-anchor="middle" font-size="14" font-weight="700" fill="#e2e8f8" letter-spacing="2">DevSecOps — Topologia de Segurança</text>
-  <text x="550" y="44" text-anchor="middle" font-size="9" fill="#4a5080" letter-spacing="1">SHIFT-LEFT SECURITY · CI/CD PIPELINE · RUNTIME PROTECTION</text>
+<!-- FLOW PILL BAR -->
+<div class="flow-bar">
+  <span class="step-pill">01 · IDE + Pre-commit</span>
+  <span class="step-arrow">→</span>
+  <span class="step-pill">02 · Secret Scan</span>
+  <span class="step-arrow">→</span>
+  <span class="step-pill">03 · SAST</span>
+  <span class="step-arrow">→</span>
+  <span class="step-pill">04 · SCA + SBOM</span>
+  <span class="step-arrow">→</span>
+  <span class="step-pill">05 · Container Scan</span>
+  <span class="step-arrow">→</span>
+  <span class="step-pill">06 · IaC Security</span>
+  <span class="step-arrow">→</span>
+  <span class="step-pill">07 · DAST</span>
+  <span class="step-arrow">→</span>
+  <span class="step-pill">08 · Produção</span>
+</div>
 
-  <!-- ZONA DEV LOCAL -->
-  <rect x="20" y="58" width="210" height="310" rx="10" fill="none" stroke="#1e3a5c" stroke-width="1.5" stroke-dasharray="6,3"/>
-  <rect x="28" y="54" width="130" height="14" rx="3" fill="#0a0e1a"/>
-  <text x="93" y="65" text-anchor="middle" font-size="9" fill="#3b82f6" font-weight="700" letter-spacing="1">DEV LOCAL</text>
-  <rect x="60" y="78" width="110" height="56" rx="8" fill="#0f1729" stroke="#3b82f6" stroke-width="1.5" filter="url(#glow-blue)"/>
-  <text x="115" y="98" text-anchor="middle" font-size="18">🖥️</text>
-  <text x="115" y="114" text-anchor="middle" font-size="9.5" fill="#93c5fd" font-weight="700">Workstation Dev</text>
-  <text x="115" y="125" text-anchor="middle" font-size="8" fill="#4a6090">VS Code / IntelliJ</text>
-  <rect x="30" y="158" width="72" height="44" rx="6" fill="#0c1520" stroke="#1d4ed8" stroke-width="1"/>
-  <text x="66" y="175" text-anchor="middle" font-size="13">🔍</text>
-  <text x="66" y="188" text-anchor="middle" font-size="8" fill="#60a5fa" font-weight="600">SonarLint</text>
-  <text x="66" y="197" text-anchor="middle" font-size="7" fill="#3a5070">SAST inline</text>
-  <rect x="112" y="158" width="72" height="44" rx="6" fill="#0c1520" stroke="#1d4ed8" stroke-width="1"/>
-  <text x="148" y="175" text-anchor="middle" font-size="13">🐛</text>
-  <text x="148" y="188" text-anchor="middle" font-size="8" fill="#60a5fa" font-weight="600">Snyk IDE</text>
-  <text x="148" y="197" text-anchor="middle" font-size="7" fill="#3a5070">SCA inline</text>
-  <rect x="45" y="222" width="130" height="44" rx="6" fill="#0c1520" stroke="#7c3aed" stroke-width="1"/>
-  <text x="110" y="239" text-anchor="middle" font-size="13">🪝</text>
-  <text x="110" y="252" text-anchor="middle" font-size="8.5" fill="#c084fc" font-weight="600">Pre-commit Hook</text>
-  <text x="110" y="262" text-anchor="middle" font-size="7" fill="#3a5070">Gitleaks · detect-secrets</text>
-  <rect x="35" y="282" width="160" height="24" rx="5" fill="#0d1535" stroke="#1e3a8a" stroke-width="1"/>
-  <text x="115" y="297" text-anchor="middle" font-size="8" fill="#818cf8">📊 Relatório de Qualidade (Sonar)</text>
-  <rect x="42" y="316" width="136" height="40" rx="6" fill="#1a0a2e" stroke="#7c3aed" stroke-width="1.5"/>
-  <text x="110" y="333" text-anchor="middle" font-size="10">🛡️</text>
-  <text x="110" y="347" text-anchor="middle" font-size="8" fill="#c084fc" font-weight="700">Time de Segurança</text>
-  <line x1="115" y1="134" x2="80" y2="158" stroke="#1d4ed8" stroke-width="1" stroke-dasharray="3,2"/>
-  <line x1="115" y1="134" x2="148" y2="158" stroke="#1d4ed8" stroke-width="1" stroke-dasharray="3,2"/>
-  <line x1="115" y1="202" x2="115" y2="222" stroke="#7c3aed" stroke-width="1" stroke-dasharray="3,2"/>
+<!-- ═══════════════════════════════════════════ DEV LOCAL ════ -->
+<div class="zone zone-dev">
+  <span class="zone-label">DEV LOCAL — máquina do desenvolvedor</span>
+  <div class="cards-row">
 
-  <!-- GIT REPO -->
-  <rect x="400" y="58" width="120" height="80" rx="10" fill="#0f1520" stroke="#f97316" stroke-width="1.5" filter="url(#glow-orange)"/>
-  <text x="460" y="85" text-anchor="middle" font-size="22">🐙</text>
-  <text x="460" y="104" text-anchor="middle" font-size="9.5" fill="#fb923c" font-weight="700">Git Repository</text>
-  <text x="460" y="116" text-anchor="middle" font-size="8" fill="#4a5080">GitHub · GitLab</text>
-  <text x="460" y="128" text-anchor="middle" font-size="7.5" fill="#7c3aed">Branch Protection · Signed Commits</text>
-  <line x1="230" y1="106" x2="396" y2="98" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arr-blue)" stroke-dasharray="5,3"/>
-  <rect x="270" y="88" width="80" height="14" rx="3" fill="#0a0e1a"/>
-  <text x="310" y="98" text-anchor="middle" font-size="8" fill="#60a5fa">git push / PR</text>
+    <div class="card card-blue">
+      <div class="card-step">ETAPA 01-A</div>
+      <div class="card-icon">🖥️</div>
+      <div class="card-title">IDE + Plugins de Segurança</div>
+      <div class="card-desc">Feedback em tempo real enquanto o código é digitado. Vulnerabilidade encontrada aqui tem custo zero de correção.</div>
+      <div class="card-tools">
+        SonarLint<br>
+        Snyk IDE<br>
+        Semgrep Extension
+      </div>
+      <span class="gate gate-info">📊 Alerta inline na IDE</span>
+    </div>
 
-  <!-- ZONA CI -->
-  <rect x="240" y="168" width="620" height="380" rx="10" fill="none" stroke="#14532d" stroke-width="1.5" stroke-dasharray="6,3"/>
-  <rect x="248" y="164" width="150" height="14" rx="3" fill="#0a0e1a"/>
-  <text x="323" y="175" text-anchor="middle" font-size="9" fill="#22c55e" font-weight="700" letter-spacing="1">CI — CONTINUOUS INTEGRATION</text>
+    <div class="card card-violet">
+      <div class="card-step">ETAPA 01-B</div>
+      <div class="card-icon">🔐</div>
+      <div class="card-title">Pre-commit Hook</div>
+      <div class="card-desc">Executa automaticamente antes de cada <code style="color:#c084fc;font-size:10px;">git commit</code>. Bloqueia o commit se encontrar problemas — nenhum código inseguro chega ao repositório.</div>
+      <div class="card-tools">
+        Gitleaks<br>
+        detect-secrets<br>
+        pre-commit framework
+      </div>
+      <span class="gate gate-block">🚫 Bloqueia o commit</span>
+    </div>
 
-  <rect x="256" y="184" width="118" height="60" rx="7" fill="#0f1e10" stroke="#22c55e" stroke-width="1.5"/>
-  <text x="315" y="206" text-anchor="middle" font-size="16">🔑</text>
-  <text x="315" y="222" text-anchor="middle" font-size="8.5" fill="#4ade80" font-weight="700">Secret Scanning</text>
-  <text x="315" y="233" text-anchor="middle" font-size="7" fill="#3a6040">TruffleHog · Gitleaks</text>
-  <rect x="262" y="238" width="106" height="10" rx="3" fill="#1a0a0a"/>
-  <text x="315" y="246" text-anchor="middle" font-size="7" fill="#ef4444">🚫 Bloqueia merge</text>
+    <div class="card card-orange-soft" style="max-width:220px; flex: 0 0 auto;">
+      <div class="card-step">REPOSITÓRIO</div>
+      <div class="card-icon">🐙</div>
+      <div class="card-title">Git Repository</div>
+      <div class="card-desc">Após o push ou abertura de Pull Request, o pipeline CI dispara automaticamente. Sem ação manual necessária.</div>
+      <div class="card-tools">
+        GitHub · GitLab<br>
+        Branch Protection<br>
+        Signed Commits
+      </div>
+      <span class="gate gate-alert">⚡ Dispara pipeline CI</span>
+    </div>
 
-  <rect x="390" y="184" width="118" height="60" rx="7" fill="#0f1e10" stroke="#a3e635" stroke-width="1.5"/>
-  <text x="449" y="206" text-anchor="middle" font-size="16">🧪</text>
-  <text x="449" y="222" text-anchor="middle" font-size="8.5" fill="#bef264" font-weight="700">SAST</text>
-  <text x="449" y="233" text-anchor="middle" font-size="7" fill="#3a6040">Semgrep · SonarQube</text>
-  <rect x="396" y="238" width="106" height="10" rx="3" fill="#1a0a0a"/>
-  <text x="449" y="246" text-anchor="middle" font-size="7" fill="#ef4444">🚫 CRITICAL · ⚠️ HIGH</text>
+  </div>
+</div>
 
-  <rect x="524" y="184" width="118" height="60" rx="7" fill="#0c1a20" stroke="#06b6d4" stroke-width="1.5"/>
-  <text x="583" y="206" text-anchor="middle" font-size="16">📦</text>
-  <text x="583" y="222" text-anchor="middle" font-size="8.5" fill="#22d3ee" font-weight="700">SCA + SBOM</text>
-  <text x="583" y="233" text-anchor="middle" font-size="7" fill="#2a5060">Trivy · Snyk · Syft</text>
-  <rect x="530" y="238" width="106" height="10" rx="3" fill="#1a0a0a"/>
-  <text x="583" y="246" text-anchor="middle" font-size="7" fill="#ef4444">🚫 CVE CRITICAL</text>
+<div class="connector">
+  <span class="arrow">↓</span>
+  <span class="label">git push / Pull Request → pipeline CI dispara automaticamente</span>
+</div>
 
-  <rect x="658" y="184" width="118" height="60" rx="7" fill="#1a0f20" stroke="#a855f7" stroke-width="1.5"/>
-  <text x="717" y="206" text-anchor="middle" font-size="16">🏗️</text>
-  <text x="717" y="222" text-anchor="middle" font-size="8.5" fill="#d8b4fe" font-weight="700">IaC Scan</text>
-  <text x="717" y="233" text-anchor="middle" font-size="7" fill="#5a3a70">Checkov · tfsec · KICS</text>
-  <rect x="664" y="238" width="106" height="10" rx="3" fill="#1a0a0a"/>
-  <text x="717" y="246" text-anchor="middle" font-size="7" fill="#ef4444">🚫 Misconfig crítica</text>
+<!-- ═══════════════════════════════════════════ CI PIPELINE ════ -->
+<div class="zone zone-ci">
+  <span class="zone-label">CI — CONTINUOUS INTEGRATION — executa a cada Push e Pull Request</span>
+  <div class="cards-row">
 
-  <rect x="390" y="280" width="118" height="60" rx="7" fill="#1a1208" stroke="#f97316" stroke-width="1.5"/>
-  <text x="449" y="302" text-anchor="middle" font-size="16">🐳</text>
-  <text x="449" y="318" text-anchor="middle" font-size="8.5" fill="#fdba74" font-weight="700">Container Scan</text>
-  <text x="449" y="329" text-anchor="middle" font-size="7" fill="#5a4020">Trivy · Clair · Anchore</text>
-  <rect x="396" y="334" width="106" height="10" rx="3" fill="#1a0a0a"/>
-  <text x="449" y="342" text-anchor="middle" font-size="7" fill="#ef4444">🚫 Imagem CRITICAL</text>
+    <div class="card card-green">
+      <div class="card-step">ETAPA 02</div>
+      <div class="card-icon">🔑</div>
+      <div class="card-title">Secret Scanning</div>
+      <div class="card-desc">Varre todo o histórico do repositório. Detecta senhas, tokens de API e chaves privadas expostas no código.</div>
+      <div class="card-tools">
+        TruffleHog<br>
+        Gitleaks<br>
+        GitHub Secret Scanning
+      </div>
+      <span class="gate gate-block">🚫 Bloqueia merge</span>
+    </div>
 
-  <rect x="524" y="280" width="118" height="60" rx="7" fill="#0f1520" stroke="#3b82f6" stroke-width="1.5"/>
-  <text x="583" y="302" text-anchor="middle" font-size="16">🔗</text>
-  <text x="583" y="318" text-anchor="middle" font-size="8.5" fill="#93c5fd" font-weight="700">Dependency Review</text>
-  <text x="583" y="329" text-anchor="middle" font-size="7" fill="#2a4060">Dependabot · Renovate</text>
-  <rect x="530" y="334" width="106" height="10" rx="3" fill="#1a0a0a"/>
-  <text x="583" y="342" text-anchor="middle" font-size="7" fill="#eab308">⚠️ Nova dep c/ CVE</text>
+    <div class="card card-lime">
+      <div class="card-step">ETAPA 03</div>
+      <div class="card-icon">🧪</div>
+      <div class="card-title">SAST</div>
+      <div class="card-desc">Analisa o código-fonte sem executar a aplicação. Detecta SQL Injection, XSS, Command Injection e padrões do OWASP Top 10.</div>
+      <div class="card-tools">
+        Semgrep<br>
+        SonarQube / SonarCloud<br>
+        Veracode
+      </div>
+      <span class="gate gate-block">🚫 CRITICAL · <span style="color:#f97316;">⚠️ HIGH</span></span>
+    </div>
 
-  <rect x="256" y="280" width="118" height="60" rx="7" fill="#0a1218" stroke="#06b6d4" stroke-width="1" stroke-dasharray="4,2"/>
-  <text x="315" y="302" text-anchor="middle" font-size="16">📋</text>
-  <text x="315" y="318" text-anchor="middle" font-size="8.5" fill="#22d3ee" font-weight="700">SBOM Gerado</text>
-  <text x="315" y="329" text-anchor="middle" font-size="7" fill="#2a5060">CycloneDX · SPDX</text>
-  <text x="315" y="342" text-anchor="middle" font-size="7" fill="#06b6d4">Syft → Grype → NVD</text>
+    <div class="card card-cyan">
+      <div class="card-step">ETAPA 04</div>
+      <div class="card-icon">📦</div>
+      <div class="card-title">SCA + SBOM</div>
+      <div class="card-desc">Verifica CVEs em todas as dependências e bibliotecas, incluindo as transitivas. Gera inventário completo do software (SBOM).</div>
+      <div class="card-tools">
+        Trivy · Snyk<br>
+        Syft (SBOM CycloneDX)<br>
+        Dependabot
+      </div>
+      <span class="gate gate-block">🚫 CVE CRITICAL</span>
+    </div>
 
-  <rect x="256" y="364" width="520" height="36" rx="6" fill="#150a25" stroke="#7c3aed" stroke-width="1.2"/>
-  <text x="516" y="381" text-anchor="middle" font-size="9" fill="#c084fc">🛡️  Time de Segurança: Define quality gates · Mantém rulesets SAST · Revisa SBOMs · Gerencia exceções</text>
+    <div class="card card-orange">
+      <div class="card-step">ETAPA 05</div>
+      <div class="card-icon">🐳</div>
+      <div class="card-title">Container Scan</div>
+      <div class="card-desc">Escaneia todas as camadas da imagem Docker — sistema operacional base, pacotes do sistema e dependências da aplicação.</div>
+      <div class="card-tools">
+        Trivy<br>
+        Clair · Anchore<br>
+        Hadolint (Dockerfile)
+      </div>
+      <span class="gate gate-block">🚫 Imagem CRITICAL</span>
+    </div>
 
-  <rect x="256" y="408" width="248" height="20" rx="4" fill="#0d1535" stroke="#1e3a8a" stroke-width="0.8"/>
-  <text x="380" y="421" text-anchor="middle" font-size="8" fill="#818cf8">📊 Relatório SAST — CWE por severidade</text>
-  <rect x="514" y="408" width="248" height="20" rx="4" fill="#0d2010" stroke="#14532d" stroke-width="0.8"/>
-  <text x="638" y="421" text-anchor="middle" font-size="8" fill="#4ade80">📊 SBOM versionado por release</text>
+    <div class="card card-purple">
+      <div class="card-step">ETAPA 06</div>
+      <div class="card-icon">🏗️</div>
+      <div class="card-title">IaC Security</div>
+      <div class="card-desc">Valida Terraform, Kubernetes YAML e Dockerfiles antes de provisionar. Detecta buckets públicos, portas abertas e permissões excessivas.</div>
+      <div class="card-tools">
+        Checkov<br>
+        tfsec · KICS<br>
+        OPA / Conftest
+      </div>
+      <span class="gate gate-block">🚫 Misconfig crítica</span>
+    </div>
 
-  <line x1="374" y1="214" x2="388" y2="214" stroke="#22c55e" stroke-width="1" marker-end="url(#arr-green)"/>
-  <line x1="508" y1="214" x2="522" y2="214" stroke="#22c55e" stroke-width="1" marker-end="url(#arr-green)"/>
-  <line x1="642" y1="214" x2="656" y2="214" stroke="#22c55e" stroke-width="1" marker-end="url(#arr-green)"/>
-  <line x1="449" y1="244" x2="449" y2="280" stroke="#f97316" stroke-width="1" marker-end="url(#arr-orange)"/>
-  <line x1="583" y1="244" x2="583" y2="280" stroke="#06b6d4" stroke-width="1" marker-end="url(#arr-cyan)"/>
-  <line x1="315" y1="244" x2="315" y2="280" stroke="#06b6d4" stroke-width="1" marker-end="url(#arr-cyan)"/>
-  <line x1="460" y1="138" x2="385" y2="195" stroke="#f97316" stroke-width="1.5" marker-end="url(#arr-orange)" stroke-dasharray="4,2"/>
-  <text x="390" y="175" text-anchor="middle" font-size="8" fill="#f97316">trigger</text>
+  </div>
 
-  <!-- BUILD -->
-  <rect x="400" y="574" width="120" height="72" rx="8" fill="#141410" stroke="#eab308" stroke-width="1.5" filter="url(#glow-orange)"/>
-  <text x="460" y="600" text-anchor="middle" font-size="20">📦</text>
-  <text x="460" y="618" text-anchor="middle" font-size="9" fill="#fde047" font-weight="700">Artefato Assinado</text>
-  <text x="460" y="629" text-anchor="middle" font-size="7.5" fill="#6a6020">Cosign · SLSA · in-toto</text>
-  <text x="460" y="639" text-anchor="middle" font-size="7.5" fill="#6a6020">SBOM arquivado</text>
-  <line x1="460" y1="548" x2="460" y2="572" stroke="#eab308" stroke-width="2" marker-end="url(#arr-yellow)"/>
-  <rect x="406" y="553" width="108" height="14" rx="3" fill="#0a0e1a"/>
-  <text x="460" y="563" text-anchor="middle" font-size="8" fill="#eab308">build → assina artefato</text>
+  <div class="sec-bar">
+    🛡️ <strong>Time de Segurança:</strong> Define quality gates · Mantém rulesets SAST · Revisa SBOMs · Gerencia exceções · Aprova políticas de IaC
+  </div>
+</div>
 
-  <!-- ZONA CD -->
-  <rect x="240" y="660" width="620" height="120" rx="10" fill="none" stroke="#831843" stroke-width="1.5" stroke-dasharray="6,3"/>
-  <rect x="248" y="656" width="160" height="14" rx="3" fill="#0a0e1a"/>
-  <text x="328" y="667" text-anchor="middle" font-size="9" fill="#f472b6" font-weight="700" letter-spacing="1">CD — CONTINUOUS DELIVERY</text>
+<div class="connector">
+  <span class="arrow">↓</span>
+  <span class="label">todos os gates aprovados → geração do artefato final</span>
+</div>
 
-  <rect x="256" y="676" width="130" height="60" rx="7" fill="#200a18" stroke="#f472b6" stroke-width="1.5"/>
-  <text x="321" y="700" text-anchor="middle" font-size="16">💥</text>
-  <text x="321" y="716" text-anchor="middle" font-size="8.5" fill="#f9a8d4" font-weight="700">DAST</text>
-  <text x="321" y="727" text-anchor="middle" font-size="7" fill="#6a2040">OWASP ZAP · Burp Ent.</text>
-  <rect x="262" y="731" width="118" height="10" rx="3" fill="#1a0a0a"/>
-  <text x="321" y="739" text-anchor="middle" font-size="7" fill="#ef4444">🚫 Bloqueia deploy prod</text>
+<!-- ═══════════════════════════════════════════ BUILD ════ -->
+<div class="zone zone-build">
+  <span class="zone-label">BUILD</span>
+  <div class="build-inner">
+    <div class="bi-icon">📦</div>
+    <div>
+      <div class="bi-title">Artefato Assinado Digitalmente</div>
+      <div class="bi-tools">
+        Cosign &nbsp;·&nbsp; SLSA &nbsp;·&nbsp; in-toto
+      </div>
+      <div class="bi-note">SBOM arquivado e vinculado a esta versão · Imutável no Artifact Registry</div>
+    </div>
+  </div>
+</div>
 
-  <rect x="406" y="676" width="130" height="60" rx="7" fill="#200a18" stroke="#a855f7" stroke-width="1.5"/>
-  <text x="471" y="700" text-anchor="middle" font-size="16">🔏</text>
-  <text x="471" y="716" text-anchor="middle" font-size="8.5" fill="#d8b4fe" font-weight="700">Admission Control</text>
-  <text x="471" y="727" text-anchor="middle" font-size="7" fill="#5a2070">OPA · Kyverno · BinAuth</text>
-  <rect x="412" y="731" width="118" height="10" rx="3" fill="#1a0a0a"/>
-  <text x="471" y="739" text-anchor="middle" font-size="7" fill="#ef4444">🚫 Pod sem assinatura</text>
+<div class="connector">
+  <span class="arrow">↓</span>
+  <span class="label">deploy no ambiente de staging → validação dinâmica antes de produção</span>
+</div>
 
-  <rect x="556" y="676" width="145" height="60" rx="7" fill="#1a0a25" stroke="#7c3aed" stroke-width="1.5"/>
-  <text x="628" y="700" text-anchor="middle" font-size="16">✅</text>
-  <text x="628" y="716" text-anchor="middle" font-size="8.5" fill="#c084fc" font-weight="700">Aprovação Segurança</text>
-  <text x="628" y="727" text-anchor="middle" font-size="7" fill="#5a3a70">CAB · CISO sign-off</text>
-  <text x="628" y="737" text-anchor="middle" font-size="7" fill="#7c3aed">PCI-DSS Req. 6 + 11</text>
+<!-- ═══════════════════════════════════════════ CD ════ -->
+<div class="zone zone-cd">
+  <span class="zone-label">CD — CONTINUOUS DELIVERY — validação final antes de produção</span>
+  <div class="cards-row">
 
-  <rect x="710" y="676" width="140" height="60" rx="7" fill="#0d1535" stroke="#818cf8" stroke-width="1"/>
-  <text x="780" y="700" text-anchor="middle" font-size="16">📊</text>
-  <text x="780" y="716" text-anchor="middle" font-size="8.5" fill="#818cf8" font-weight="700">Relatório DAST</text>
-  <text x="780" y="727" text-anchor="middle" font-size="7" fill="#3a4080">OWASP Top 10</text>
-  <text x="780" y="739" text-anchor="middle" font-size="7" fill="#3a4080">→ entregue ao CISO</text>
+    <div class="card card-pink">
+      <div class="card-step">ETAPA 07</div>
+      <div class="card-icon">💥</div>
+      <div class="card-title">DAST</div>
+      <div class="card-desc">Testa a aplicação em execução simulando ataques reais. Valida autenticação, autorização, headers de segurança e comportamento sob ataque. Roda contra staging — nunca produção.</div>
+      <div class="card-tools">
+        OWASP ZAP<br>
+        Acunetix<br>
+        Burp Suite Enterprise<br>
+        Nuclei
+      </div>
+      <span class="gate gate-block">🚫 Bloqueia deploy prod</span>
+    </div>
 
-  <line x1="460" y1="646" x2="380" y2="700" stroke="#f472b6" stroke-width="1.5" marker-end="url(#arr-red)" stroke-dasharray="4,2"/>
-  <text x="390" y="676" text-anchor="middle" font-size="8" fill="#f472b6">staging</text>
-  <line x1="386" y1="706" x2="404" y2="706" stroke="#f472b6" stroke-width="1" marker-end="url(#arr-red)"/>
-  <line x1="536" y1="706" x2="554" y2="706" stroke="#a855f7" stroke-width="1" marker-end="url(#arr-purple)"/>
-  <line x1="701" y1="706" x2="708" y2="706" stroke="#818cf8" stroke-width="1" marker-end="url(#arr-purple)"/>
+    <div class="card card-purple">
+      <div class="card-step">CONTROLE</div>
+      <div class="card-icon">🔏</div>
+      <div class="card-title">Admission Control</div>
+      <div class="card-desc">Gate automático no cluster Kubernetes. Rejeita qualquer pod sem assinatura válida ou fora das políticas de segurança definidas.</div>
+      <div class="card-tools">
+        OPA Gatekeeper<br>
+        Kyverno<br>
+        Binary Authorization
+      </div>
+      <span class="gate gate-block">🚫 Pod sem assinatura</span>
+    </div>
 
-  <!-- ZONA PRODUÇÃO -->
-  <rect x="870" y="58" width="210" height="762" rx="10" fill="none" stroke="#1e1b4b" stroke-width="1.5" stroke-dasharray="6,3"/>
-  <rect x="878" y="54" width="110" height="14" rx="3" fill="#0a0e1a"/>
-  <text x="933" y="65" text-anchor="middle" font-size="9" fill="#818cf8" font-weight="700" letter-spacing="1">PRODUÇÃO</text>
+    <div class="card card-indigo">
+      <div class="card-step">APROVAÇÃO</div>
+      <div class="card-icon">✅</div>
+      <div class="card-title">Aprovação de Segurança</div>
+      <div class="card-desc">Gate humano obrigatório em ambientes regulados. Validação formal de que todos os controles foram executados antes da promoção para produção.</div>
+      <div class="card-tools">
+        CAB (Change Advisory Board)<br>
+        CISO sign-off<br>
+        PCI-DSS Req. 6 + 11
+      </div>
+      <span class="gate gate-alert">⚠️ Aprovação obrigatória</span>
+    </div>
 
-  <rect x="882" y="78" width="186" height="56" rx="8" fill="#0f0f1e" stroke="#4f46e5" stroke-width="1.5" filter="url(#glow-purple)"/>
-  <text x="975" y="100" text-anchor="middle" font-size="18">☸️</text>
-  <text x="975" y="116" text-anchor="middle" font-size="9" fill="#a5b4fc" font-weight="700">Kubernetes Cluster</text>
-  <text x="975" y="127" text-anchor="middle" font-size="7.5" fill="#4a4880">Pods · Services · Ingress</text>
+  </div>
+</div>
 
-  <rect x="882" y="152" width="186" height="56" rx="7" fill="#0f1e10" stroke="#22c55e" stroke-width="1.5"/>
-  <text x="975" y="174" text-anchor="middle" font-size="15">🏃</text>
-  <text x="975" y="189" text-anchor="middle" font-size="8.5" fill="#4ade80" font-weight="700">Runtime Security</text>
-  <text x="975" y="200" text-anchor="middle" font-size="7" fill="#2a5030">Falco · Tetragon · Wazuh</text>
+<div class="connector">
+  <span class="arrow">↓</span>
+  <span class="label">deploy aprovado → produção com monitoramento contínuo</span>
+</div>
 
-  <rect x="882" y="226" width="186" height="56" rx="7" fill="#0c1a20" stroke="#06b6d4" stroke-width="1.5"/>
-  <text x="975" y="248" text-anchor="middle" font-size="15">📡</text>
-  <text x="975" y="263" text-anchor="middle" font-size="8.5" fill="#22d3ee" font-weight="700">SBOM Monitoring</text>
-  <text x="975" y="274" text-anchor="middle" font-size="7" fill="#2a5060">Dependency-Track · Snyk</text>
+<!-- ═══════════════════════════════════════════ PRODUÇÃO ════ -->
+<div class="zone zone-prod">
+  <span class="zone-label">PRODUÇÃO — ETAPA 08 — monitoramento e proteção contínua</span>
+  <div class="cards-row">
 
-  <rect x="882" y="300" width="186" height="56" rx="7" fill="#1a0f10" stroke="#ef4444" stroke-width="1.5" filter="url(#glow-red)"/>
-  <text x="975" y="322" text-anchor="middle" font-size="15">🛡️</text>
-  <text x="975" y="337" text-anchor="middle" font-size="8.5" fill="#fca5a5" font-weight="700">WAF + DDoS</text>
-  <text x="975" y="348" text-anchor="middle" font-size="7" fill="#5a2020">Cloudflare · AWS WAF · NGFW</text>
+    <div class="card card-green">
+      <div class="card-step">RUNTIME</div>
+      <div class="card-icon">⚙️</div>
+      <div class="card-title">Runtime Security</div>
+      <div class="card-desc">
+        Monitora comportamentos anômalos em tempo real: shell inesperado, conexão suspeita, leitura de arquivo sensível.<br><br>
+        <span style="color:#4ade80;font-weight:600;">Containers:</span> Falco, Tetragon (eBPF)<br>
+        <span style="color:#4ade80;font-weight:600;">VMs / Bare metal:</span> Wazuh (HIDS), agente EDR<br>
+        <span style="color:#4ade80;font-weight:600;">Logs →</span> SIEM · Datadog · Dynatrace
+      </div>
+      <div class="card-tools">
+        Falco · Tetragon<br>
+        Wazuh · EDR Agent
+      </div>
+      <span class="gate gate-detect">⚡ Alerta em tempo real</span>
+    </div>
 
-  <rect x="882" y="374" width="186" height="56" rx="7" fill="#100f1e" stroke="#818cf8" stroke-width="1.5"/>
-  <text x="975" y="396" text-anchor="middle" font-size="15">📊</text>
-  <text x="975" y="411" text-anchor="middle" font-size="8.5" fill="#a5b4fc" font-weight="700">SIEM</text>
-  <text x="975" y="422" text-anchor="middle" font-size="7" fill="#3a3a70">Splunk · Sentinel · Elastic</text>
+    <div class="card card-red">
+      <div class="card-step">PERÍMETRO</div>
+      <div class="card-icon">🛡️</div>
+      <div class="card-title">WAF + DDoS</div>
+      <div class="card-desc">Proteção na borda da rede. Bloqueia ataques web antes de chegarem à aplicação e mitiga ataques volumétricos.</div>
+      <div class="card-tools">
+        Cloudflare<br>
+        AWS WAF · Cloud Armor<br>
+        NGFW (Palo Alto · Fortinet)
+      </div>
+      <span class="gate gate-block">🚫 Bloqueia na borda</span>
+    </div>
 
-  <rect x="882" y="448" width="186" height="56" rx="7" fill="#1a0a10" stroke="#f43f5e" stroke-width="1.5"/>
-  <text x="975" y="470" text-anchor="middle" font-size="15">🔭</text>
-  <text x="975" y="485" text-anchor="middle" font-size="8.5" fill="#fda4af" font-weight="700">SOC 24/7</text>
-  <text x="975" y="496" text-anchor="middle" font-size="7" fill="#5a1a2a">Monitoramento · Incident Response</text>
+    <div class="card card-indigo">
+      <div class="card-step">VISIBILIDADE</div>
+      <div class="card-icon">🖥️</div>
+      <div class="card-title">SIEM</div>
+      <div class="card-desc">Coleta e correlaciona logs de todas as fontes — containers, VMs, cloud, aplicação, firewall. Detecta padrões de ataque que ferramentas isoladas não veriam.</div>
+      <div class="card-tools">
+        Splunk<br>
+        Microsoft Sentinel<br>
+        Elastic SIEM · Datadog
+      </div>
+      <span class="gate gate-detect">⚡ Detecção correlacionada</span>
+    </div>
 
-  <rect x="882" y="522" width="186" height="56" rx="7" fill="#1a1808" stroke="#eab308" stroke-width="1.5"/>
-  <text x="975" y="544" text-anchor="middle" font-size="15">🎯</text>
-  <text x="975" y="559" text-anchor="middle" font-size="8.5" fill="#fde047" font-weight="700">VAPT (Trimestral/Anual)</text>
-  <text x="975" y="570" text-anchor="middle" font-size="7" fill="#5a5010">Pentest · Red Team</text>
+    <div class="card card-pink">
+      <div class="card-step">RESPOSTA</div>
+      <div class="card-icon">🚨</div>
+      <div class="card-title">SOC 24/7</div>
+      <div class="card-desc">Monitoramento contínuo e resposta a incidentes. Time dedicado à investigação, contenção e erradicação de ameaças.</div>
+      <div class="card-tools">
+        EDR / XDR<br>
+        Incident Response<br>
+        Forense Digital
+      </div>
+      <span class="gate gate-detect">⚡ Resposta a incidentes</span>
+    </div>
 
-  <rect x="882" y="596" width="186" height="56" rx="7" fill="#150a20" stroke="#a855f7" stroke-width="1.5"/>
-  <text x="975" y="618" text-anchor="middle" font-size="15">📋</text>
-  <text x="975" y="633" text-anchor="middle" font-size="8.5" fill="#d8b4fe" font-weight="700">Compliance</text>
-  <text x="975" y="644" text-anchor="middle" font-size="7" fill="#5a2a80">PCI-DSS v4 · ISO 27001 · LGPD</text>
+    <div class="card card-yellow">
+      <div class="card-step">VALIDAÇÃO</div>
+      <div class="card-icon">🎯</div>
+      <div class="card-title">VAPT</div>
+      <div class="card-desc">Testes periódicos de invasão por especialistas. Valida na prática se os controles resistem a um atacante real.</div>
+      <div class="card-tools">
+        Pentest (trimestral)<br>
+        Red Team (anual)<br>
+        BAS — Cymulate · Picus
+      </div>
+      <span class="gate gate-info">📋 Relatório executivo</span>
+    </div>
 
-  <rect x="882" y="670" width="186" height="40" rx="6" fill="#150a25" stroke="#7c3aed" stroke-width="1.2"/>
-  <text x="975" y="687" text-anchor="middle" font-size="8" fill="#c084fc">🛡️ Time de Segurança</text>
-  <text x="975" y="700" text-anchor="middle" font-size="7.5" fill="#7c3aed">CISO · SOC · Red Team</text>
+    <div class="card card-purple">
+      <div class="card-step">COMPLIANCE</div>
+      <div class="card-icon">📋</div>
+      <div class="card-title">Compliance</div>
+      <div class="card-desc">Conformidade contínua com regulações e frameworks. Geração de evidências para auditorias formais.</div>
+      <div class="card-tools">
+        PCI-DSS v4.0<br>
+        ISO 27001 · LGPD<br>
+        CIS Controls v8
+      </div>
+      <span class="gate gate-info">📋 Auditoria contínua</span>
+    </div>
 
-  <line x1="975" y1="134" x2="975" y2="152" stroke="#4f46e5" stroke-width="1" marker-end="url(#arr-purple)"/>
-  <line x1="975" y1="208" x2="975" y2="226" stroke="#22c55e" stroke-width="1" marker-end="url(#arr-green)"/>
-  <line x1="975" y1="282" x2="975" y2="300" stroke="#06b6d4" stroke-width="1" marker-end="url(#arr-cyan)"/>
-  <line x1="975" y1="356" x2="975" y2="374" stroke="#ef4444" stroke-width="1" marker-end="url(#arr-red)"/>
-  <line x1="975" y1="430" x2="975" y2="448" stroke="#818cf8" stroke-width="1" marker-end="url(#arr-purple)"/>
-  <line x1="975" y1="504" x2="975" y2="522" stroke="#f43f5e" stroke-width="1" marker-end="url(#arr-red)"/>
-  <line x1="975" y1="578" x2="975" y2="596" stroke="#eab308" stroke-width="1" marker-end="url(#arr-yellow)"/>
-  <line x1="975" y1="652" x2="975" y2="670" stroke="#a855f7" stroke-width="1" marker-end="url(#arr-purple)"/>
+  </div>
 
-  <line x1="856" y1="706" x2="880" y2="106" stroke="#4f46e5" stroke-width="1.5" marker-end="url(#arr-purple)" stroke-dasharray="5,3"/>
-  <rect x="808" y="400" width="60" height="14" rx="3" fill="#0a0e1a"/>
-  <text x="838" y="410" text-anchor="middle" font-size="8" fill="#818cf8">deploy</text>
+  <div class="sec-bar">
+    🛡️ <strong>Time de Segurança:</strong> CISO · SOC · Red Team · GRC · Pentesters — Proteção end-to-end do ambiente de produção
+  </div>
+</div>
 
-  <path d="M 882 254 Q 840 254 840 430 Q 840 580 520 590" fill="none" stroke="#06b6d4" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr-cyan)"/>
-  <rect x="804" y="330" width="90" height="20" rx="3" fill="#0a0e1a"/>
-  <text x="849" y="341" text-anchor="middle" font-size="7.5" fill="#06b6d4">📡 CVE novo detectado</text>
-  <text x="849" y="351" text-anchor="middle" font-size="7" fill="#06b6d4">alerta → squad</text>
+<!-- ── LEGENDA ── -->
+<div class="legend">
+  <div class="leg-item"><span class="leg-dot" style="background:#f87171;"></span>🚫 Bloqueia automaticamente</div>
+  <div class="leg-item"><span class="leg-dot" style="background:#fbbf24;"></span>⚠️ Alerta com SLA definido</div>
+  <div class="leg-item"><span class="leg-dot" style="background:#4ade80;"></span>⚡ Detecção em tempo real</div>
+  <div class="leg-item"><span class="leg-dot" style="background:#a5b4fc;"></span>📋 Relatório / Auditoria</div>
+  <div class="leg-item" style="color:#2a3060; border-left:1px solid #1a1f35; padding-left:18px; margin-left:4px;">
+    <span class="leg-sla">CRITICAL → Imediato &nbsp;|&nbsp; HIGH → 7 dias &nbsp;|&nbsp; MEDIUM → 30 dias &nbsp;|&nbsp; LOW → 90 dias</span>
+  </div>
+</div>
 
-  <!-- LEGENDA -->
-  <rect x="20" y="386" width="210" height="244" rx="8" fill="#0c0f1e" stroke="#1e2240" stroke-width="1"/>
-  <text x="125" y="403" text-anchor="middle" font-size="9" fill="#4a5080" font-weight="700" letter-spacing="1">LEGENDA</text>
-  <line x1="34" y1="418" x2="70" y2="418" stroke="#3b82f6" stroke-width="2"/>
-  <text x="78" y="422" font-size="8.5" fill="#93c5fd">Dev Local / Push</text>
-  <line x1="34" y1="436" x2="70" y2="436" stroke="#22c55e" stroke-width="2"/>
-  <text x="78" y="440" font-size="8.5" fill="#4ade80">CI Pipeline</text>
-  <line x1="34" y1="454" x2="70" y2="454" stroke="#eab308" stroke-width="2"/>
-  <text x="78" y="458" font-size="8.5" fill="#fde047">Build / Artefato</text>
-  <line x1="34" y1="472" x2="70" y2="472" stroke="#f472b6" stroke-width="2"/>
-  <text x="78" y="476" font-size="8.5" fill="#f9a8d4">CD / Deploy</text>
-  <line x1="34" y1="490" x2="70" y2="490" stroke="#818cf8" stroke-width="2"/>
-  <text x="78" y="494" font-size="8.5" fill="#a5b4fc">Produção</text>
-  <line x1="34" y1="508" x2="70" y2="508" stroke="#06b6d4" stroke-width="2" stroke-dasharray="4,2"/>
-  <text x="78" y="512" font-size="8.5" fill="#22d3ee">SBOM feedback loop</text>
-  <line x1="34" y1="526" x2="70" y2="526" stroke="#7c3aed" stroke-width="2"/>
-  <text x="78" y="530" font-size="8.5" fill="#c084fc">🛡️ Time Segurança</text>
-  <rect x="34" y="542" width="58" height="14" rx="4" fill="rgba(239,68,68,0.15)"/>
-  <text x="63" y="553" text-anchor="middle" font-size="8" fill="#ef4444">🚫 Bloqueia</text>
-  <rect x="100" y="542" width="54" height="14" rx="4" fill="rgba(234,179,8,0.12)"/>
-  <text x="127" y="553" text-anchor="middle" font-size="8" fill="#d4a008">⚠️ Alerta</text>
-  <rect x="164" y="542" width="50" height="14" rx="4" fill="rgba(99,102,241,0.15)"/>
-  <text x="189" y="553" text-anchor="middle" font-size="8" fill="#818cf8">📊 Report</text>
-  <text x="34" y="576" font-size="8" fill="#4a5080" font-weight="700">SEVERIDADE → GATE:</text>
-  <text x="34" y="590" font-size="8" fill="#ef4444">● CRITICAL → Bloqueia sempre</text>
-  <text x="34" y="602" font-size="8" fill="#f97316">● HIGH → Bloqueia (maduro)</text>
-  <text x="34" y="614" font-size="8" fill="#eab308">● MEDIUM → Alerta / SLA 30d</text>
-  <text x="34" y="626" font-size="8" fill="#4ade80">● LOW → Revisão trimestral</text>
-</svg>
 </body>
 </html>
