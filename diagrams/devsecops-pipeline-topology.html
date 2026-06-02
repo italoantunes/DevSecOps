@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>DevSecOps — Topologia de Segurança</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', monospace, sans-serif;
+  background: #0a0e1a;
+  color: #c8d0e8;
+  padding: 20px;
+}
+svg { display: block; width: 100%; max-width: 1100px; margin: 0 auto; height: auto; }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1100 820" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a1f35" stroke-width="0.8"/>
+    </pattern>
+    <filter id="glow-blue"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glow-green"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glow-orange"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glow-red"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glow-purple"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#3b82f6"/></marker>
+    <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#22c55e"/></marker>
+    <marker id="arr-orange" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#f97316"/></marker>
+    <marker id="arr-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ef4444"/></marker>
+    <marker id="arr-purple" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a855f7"/></marker>
+    <marker id="arr-cyan" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#06b6d4"/></marker>
+    <marker id="arr-yellow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#eab308"/></marker>
+  </defs>
+
+  <rect width="1100" height="820" fill="#0a0e1a"/>
+  <rect width="1100" height="820" fill="url(#grid)"/>
+
+  <text x="550" y="28" text-anchor="middle" font-size="14" font-weight="700" fill="#e2e8f8" letter-spacing="2">DevSecOps — Topologia de Segurança</text>
+  <text x="550" y="44" text-anchor="middle" font-size="9" fill="#4a5080" letter-spacing="1">SHIFT-LEFT SECURITY · CI/CD PIPELINE · RUNTIME PROTECTION</text>
+
+  <!-- ZONA DEV LOCAL -->
+  <rect x="20" y="58" width="210" height="310" rx="10" fill="none" stroke="#1e3a5c" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <rect x="28" y="54" width="130" height="14" rx="3" fill="#0a0e1a"/>
+  <text x="93" y="65" text-anchor="middle" font-size="9" fill="#3b82f6" font-weight="700" letter-spacing="1">DEV LOCAL</text>
+  <rect x="60" y="78" width="110" height="56" rx="8" fill="#0f1729" stroke="#3b82f6" stroke-width="1.5" filter="url(#glow-blue)"/>
+  <text x="115" y="98" text-anchor="middle" font-size="18">🖥️</text>
+  <text x="115" y="114" text-anchor="middle" font-size="9.5" fill="#93c5fd" font-weight="700">Workstation Dev</text>
+  <text x="115" y="125" text-anchor="middle" font-size="8" fill="#4a6090">VS Code / IntelliJ</text>
+  <rect x="30" y="158" width="72" height="44" rx="6" fill="#0c1520" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="66" y="175" text-anchor="middle" font-size="13">🔍</text>
+  <text x="66" y="188" text-anchor="middle" font-size="8" fill="#60a5fa" font-weight="600">SonarLint</text>
+  <text x="66" y="197" text-anchor="middle" font-size="7" fill="#3a5070">SAST inline</text>
+  <rect x="112" y="158" width="72" height="44" rx="6" fill="#0c1520" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="148" y="175" text-anchor="middle" font-size="13">🐛</text>
+  <text x="148" y="188" text-anchor="middle" font-size="8" fill="#60a5fa" font-weight="600">Snyk IDE</text>
+  <text x="148" y="197" text-anchor="middle" font-size="7" fill="#3a5070">SCA inline</text>
+  <rect x="45" y="222" width="130" height="44" rx="6" fill="#0c1520" stroke="#7c3aed" stroke-width="1"/>
+  <text x="110" y="239" text-anchor="middle" font-size="13">🪝</text>
+  <text x="110" y="252" text-anchor="middle" font-size="8.5" fill="#c084fc" font-weight="600">Pre-commit Hook</text>
+  <text x="110" y="262" text-anchor="middle" font-size="7" fill="#3a5070">Gitleaks · detect-secrets</text>
+  <rect x="35" y="282" width="160" height="24" rx="5" fill="#0d1535" stroke="#1e3a8a" stroke-width="1"/>
+  <text x="115" y="297" text-anchor="middle" font-size="8" fill="#818cf8">📊 Relatório de Qualidade (Sonar)</text>
+  <rect x="42" y="316" width="136" height="40" rx="6" fill="#1a0a2e" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="110" y="333" text-anchor="middle" font-size="10">🛡️</text>
+  <text x="110" y="347" text-anchor="middle" font-size="8" fill="#c084fc" font-weight="700">Time de Segurança</text>
+  <line x1="115" y1="134" x2="80" y2="158" stroke="#1d4ed8" stroke-width="1" stroke-dasharray="3,2"/>
+  <line x1="115" y1="134" x2="148" y2="158" stroke="#1d4ed8" stroke-width="1" stroke-dasharray="3,2"/>
+  <line x1="115" y1="202" x2="115" y2="222" stroke="#7c3aed" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <!-- GIT REPO -->
+  <rect x="400" y="58" width="120" height="80" rx="10" fill="#0f1520" stroke="#f97316" stroke-width="1.5" filter="url(#glow-orange)"/>
+  <text x="460" y="85" text-anchor="middle" font-size="22">🐙</text>
+  <text x="460" y="104" text-anchor="middle" font-size="9.5" fill="#fb923c" font-weight="700">Git Repository</text>
+  <text x="460" y="116" text-anchor="middle" font-size="8" fill="#4a5080">GitHub · GitLab</text>
+  <text x="460" y="128" text-anchor="middle" font-size="7.5" fill="#7c3aed">Branch Protection · Signed Commits</text>
+  <line x1="230" y1="106" x2="396" y2="98" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arr-blue)" stroke-dasharray="5,3"/>
+  <rect x="270" y="88" width="80" height="14" rx="3" fill="#0a0e1a"/>
+  <text x="310" y="98" text-anchor="middle" font-size="8" fill="#60a5fa">git push / PR</text>
+
+  <!-- ZONA CI -->
+  <rect x="240" y="168" width="620" height="380" rx="10" fill="none" stroke="#14532d" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <rect x="248" y="164" width="150" height="14" rx="3" fill="#0a0e1a"/>
+  <text x="323" y="175" text-anchor="middle" font-size="9" fill="#22c55e" font-weight="700" letter-spacing="1">CI — CONTINUOUS INTEGRATION</text>
+
+  <rect x="256" y="184" width="118" height="60" rx="7" fill="#0f1e10" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="315" y="206" text-anchor="middle" font-size="16">🔑</text>
+  <text x="315" y="222" text-anchor="middle" font-size="8.5" fill="#4ade80" font-weight="700">Secret Scanning</text>
+  <text x="315" y="233" text-anchor="middle" font-size="7" fill="#3a6040">TruffleHog · Gitleaks</text>
+  <rect x="262" y="238" width="106" height="10" rx="3" fill="#1a0a0a"/>
+  <text x="315" y="246" text-anchor="middle" font-size="7" fill="#ef4444">🚫 Bloqueia merge</text>
+
+  <rect x="390" y="184" width="118" height="60" rx="7" fill="#0f1e10" stroke="#a3e635" stroke-width="1.5"/>
+  <text x="449" y="206" text-anchor="middle" font-size="16">🧪</text>
+  <text x="449" y="222" text-anchor="middle" font-size="8.5" fill="#bef264" font-weight="700">SAST</text>
+  <text x="449" y="233" text-anchor="middle" font-size="7" fill="#3a6040">Semgrep · SonarQube</text>
+  <rect x="396" y="238" width="106" height="10" rx="3" fill="#1a0a0a"/>
+  <text x="449" y="246" text-anchor="middle" font-size="7" fill="#ef4444">🚫 CRITICAL · ⚠️ HIGH</text>
+
+  <rect x="524" y="184" width="118" height="60" rx="7" fill="#0c1a20" stroke="#06b6d4" stroke-width="1.5"/>
+  <text x="583" y="206" text-anchor="middle" font-size="16">📦</text>
+  <text x="583" y="222" text-anchor="middle" font-size="8.5" fill="#22d3ee" font-weight="700">SCA + SBOM</text>
+  <text x="583" y="233" text-anchor="middle" font-size="7" fill="#2a5060">Trivy · Snyk · Syft</text>
+  <rect x="530" y="238" width="106" height="10" rx="3" fill="#1a0a0a"/>
+  <text x="583" y="246" text-anchor="middle" font-size="7" fill="#ef4444">🚫 CVE CRITICAL</text>
+
+  <rect x="658" y="184" width="118" height="60" rx="7" fill="#1a0f20" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="717" y="206" text-anchor="middle" font-size="16">🏗️</text>
+  <text x="717" y="222" text-anchor="middle" font-size="8.5" fill="#d8b4fe" font-weight="700">IaC Scan</text>
+  <text x="717" y="233" text-anchor="middle" font-size="7" fill="#5a3a70">Checkov · tfsec · KICS</text>
+  <rect x="664" y="238" width="106" height="10" rx="3" fill="#1a0a0a"/>
+  <text x="717" y="246" text-anchor="middle" font-size="7" fill="#ef4444">🚫 Misconfig crítica</text>
+
+  <rect x="390" y="280" width="118" height="60" rx="7" fill="#1a1208" stroke="#f97316" stroke-width="1.5"/>
+  <text x="449" y="302" text-anchor="middle" font-size="16">🐳</text>
+  <text x="449" y="318" text-anchor="middle" font-size="8.5" fill="#fdba74" font-weight="700">Container Scan</text>
+  <text x="449" y="329" text-anchor="middle" font-size="7" fill="#5a4020">Trivy · Clair · Anchore</text>
+  <rect x="396" y="334" width="106" height="10" rx="3" fill="#1a0a0a"/>
+  <text x="449" y="342" text-anchor="middle" font-size="7" fill="#ef4444">🚫 Imagem CRITICAL</text>
+
+  <rect x="524" y="280" width="118" height="60" rx="7" fill="#0f1520" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="583" y="302" text-anchor="middle" font-size="16">🔗</text>
+  <text x="583" y="318" text-anchor="middle" font-size="8.5" fill="#93c5fd" font-weight="700">Dependency Review</text>
+  <text x="583" y="329" text-anchor="middle" font-size="7" fill="#2a4060">Dependabot · Renovate</text>
+  <rect x="530" y="334" width="106" height="10" rx="3" fill="#1a0a0a"/>
+  <text x="583" y="342" text-anchor="middle" font-size="7" fill="#eab308">⚠️ Nova dep c/ CVE</text>
+
+  <rect x="256" y="280" width="118" height="60" rx="7" fill="#0a1218" stroke="#06b6d4" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="315" y="302" text-anchor="middle" font-size="16">📋</text>
+  <text x="315" y="318" text-anchor="middle" font-size="8.5" fill="#22d3ee" font-weight="700">SBOM Gerado</text>
+  <text x="315" y="329" text-anchor="middle" font-size="7" fill="#2a5060">CycloneDX · SPDX</text>
+  <text x="315" y="342" text-anchor="middle" font-size="7" fill="#06b6d4">Syft → Grype → NVD</text>
+
+  <rect x="256" y="364" width="520" height="36" rx="6" fill="#150a25" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="516" y="381" text-anchor="middle" font-size="9" fill="#c084fc">🛡️  Time de Segurança: Define quality gates · Mantém rulesets SAST · Revisa SBOMs · Gerencia exceções</text>
+
+  <rect x="256" y="408" width="248" height="20" rx="4" fill="#0d1535" stroke="#1e3a8a" stroke-width="0.8"/>
+  <text x="380" y="421" text-anchor="middle" font-size="8" fill="#818cf8">📊 Relatório SAST — CWE por severidade</text>
+  <rect x="514" y="408" width="248" height="20" rx="4" fill="#0d2010" stroke="#14532d" stroke-width="0.8"/>
+  <text x="638" y="421" text-anchor="middle" font-size="8" fill="#4ade80">📊 SBOM versionado por release</text>
+
+  <line x1="374" y1="214" x2="388" y2="214" stroke="#22c55e" stroke-width="1" marker-end="url(#arr-green)"/>
+  <line x1="508" y1="214" x2="522" y2="214" stroke="#22c55e" stroke-width="1" marker-end="url(#arr-green)"/>
+  <line x1="642" y1="214" x2="656" y2="214" stroke="#22c55e" stroke-width="1" marker-end="url(#arr-green)"/>
+  <line x1="449" y1="244" x2="449" y2="280" stroke="#f97316" stroke-width="1" marker-end="url(#arr-orange)"/>
+  <line x1="583" y1="244" x2="583" y2="280" stroke="#06b6d4" stroke-width="1" marker-end="url(#arr-cyan)"/>
+  <line x1="315" y1="244" x2="315" y2="280" stroke="#06b6d4" stroke-width="1" marker-end="url(#arr-cyan)"/>
+  <line x1="460" y1="138" x2="385" y2="195" stroke="#f97316" stroke-width="1.5" marker-end="url(#arr-orange)" stroke-dasharray="4,2"/>
+  <text x="390" y="175" text-anchor="middle" font-size="8" fill="#f97316">trigger</text>
+
+  <!-- BUILD -->
+  <rect x="400" y="574" width="120" height="72" rx="8" fill="#141410" stroke="#eab308" stroke-width="1.5" filter="url(#glow-orange)"/>
+  <text x="460" y="600" text-anchor="middle" font-size="20">📦</text>
+  <text x="460" y="618" text-anchor="middle" font-size="9" fill="#fde047" font-weight="700">Artefato Assinado</text>
+  <text x="460" y="629" text-anchor="middle" font-size="7.5" fill="#6a6020">Cosign · SLSA · in-toto</text>
+  <text x="460" y="639" text-anchor="middle" font-size="7.5" fill="#6a6020">SBOM arquivado</text>
+  <line x1="460" y1="548" x2="460" y2="572" stroke="#eab308" stroke-width="2" marker-end="url(#arr-yellow)"/>
+  <rect x="406" y="553" width="108" height="14" rx="3" fill="#0a0e1a"/>
+  <text x="460" y="563" text-anchor="middle" font-size="8" fill="#eab308">build → assina artefato</text>
+
+  <!-- ZONA CD -->
+  <rect x="240" y="660" width="620" height="120" rx="10" fill="none" stroke="#831843" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <rect x="248" y="656" width="160" height="14" rx="3" fill="#0a0e1a"/>
+  <text x="328" y="667" text-anchor="middle" font-size="9" fill="#f472b6" font-weight="700" letter-spacing="1">CD — CONTINUOUS DELIVERY</text>
+
+  <rect x="256" y="676" width="130" height="60" rx="7" fill="#200a18" stroke="#f472b6" stroke-width="1.5"/>
+  <text x="321" y="700" text-anchor="middle" font-size="16">💥</text>
+  <text x="321" y="716" text-anchor="middle" font-size="8.5" fill="#f9a8d4" font-weight="700">DAST</text>
+  <text x="321" y="727" text-anchor="middle" font-size="7" fill="#6a2040">OWASP ZAP · Burp Ent.</text>
+  <rect x="262" y="731" width="118" height="10" rx="3" fill="#1a0a0a"/>
+  <text x="321" y="739" text-anchor="middle" font-size="7" fill="#ef4444">🚫 Bloqueia deploy prod</text>
+
+  <rect x="406" y="676" width="130" height="60" rx="7" fill="#200a18" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="471" y="700" text-anchor="middle" font-size="16">🔏</text>
+  <text x="471" y="716" text-anchor="middle" font-size="8.5" fill="#d8b4fe" font-weight="700">Admission Control</text>
+  <text x="471" y="727" text-anchor="middle" font-size="7" fill="#5a2070">OPA · Kyverno · BinAuth</text>
+  <rect x="412" y="731" width="118" height="10" rx="3" fill="#1a0a0a"/>
+  <text x="471" y="739" text-anchor="middle" font-size="7" fill="#ef4444">🚫 Pod sem assinatura</text>
+
+  <rect x="556" y="676" width="145" height="60" rx="7" fill="#1a0a25" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="628" y="700" text-anchor="middle" font-size="16">✅</text>
+  <text x="628" y="716" text-anchor="middle" font-size="8.5" fill="#c084fc" font-weight="700">Aprovação Segurança</text>
+  <text x="628" y="727" text-anchor="middle" font-size="7" fill="#5a3a70">CAB · CISO sign-off</text>
+  <text x="628" y="737" text-anchor="middle" font-size="7" fill="#7c3aed">PCI-DSS Req. 6 + 11</text>
+
+  <rect x="710" y="676" width="140" height="60" rx="7" fill="#0d1535" stroke="#818cf8" stroke-width="1"/>
+  <text x="780" y="700" text-anchor="middle" font-size="16">📊</text>
+  <text x="780" y="716" text-anchor="middle" font-size="8.5" fill="#818cf8" font-weight="700">Relatório DAST</text>
+  <text x="780" y="727" text-anchor="middle" font-size="7" fill="#3a4080">OWASP Top 10</text>
+  <text x="780" y="739" text-anchor="middle" font-size="7" fill="#3a4080">→ entregue ao CISO</text>
+
+  <line x1="460" y1="646" x2="380" y2="700" stroke="#f472b6" stroke-width="1.5" marker-end="url(#arr-red)" stroke-dasharray="4,2"/>
+  <text x="390" y="676" text-anchor="middle" font-size="8" fill="#f472b6">staging</text>
+  <line x1="386" y1="706" x2="404" y2="706" stroke="#f472b6" stroke-width="1" marker-end="url(#arr-red)"/>
+  <line x1="536" y1="706" x2="554" y2="706" stroke="#a855f7" stroke-width="1" marker-end="url(#arr-purple)"/>
+  <line x1="701" y1="706" x2="708" y2="706" stroke="#818cf8" stroke-width="1" marker-end="url(#arr-purple)"/>
+
+  <!-- ZONA PRODUÇÃO -->
+  <rect x="870" y="58" width="210" height="762" rx="10" fill="none" stroke="#1e1b4b" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <rect x="878" y="54" width="110" height="14" rx="3" fill="#0a0e1a"/>
+  <text x="933" y="65" text-anchor="middle" font-size="9" fill="#818cf8" font-weight="700" letter-spacing="1">PRODUÇÃO</text>
+
+  <rect x="882" y="78" width="186" height="56" rx="8" fill="#0f0f1e" stroke="#4f46e5" stroke-width="1.5" filter="url(#glow-purple)"/>
+  <text x="975" y="100" text-anchor="middle" font-size="18">☸️</text>
+  <text x="975" y="116" text-anchor="middle" font-size="9" fill="#a5b4fc" font-weight="700">Kubernetes Cluster</text>
+  <text x="975" y="127" text-anchor="middle" font-size="7.5" fill="#4a4880">Pods · Services · Ingress</text>
+
+  <rect x="882" y="152" width="186" height="56" rx="7" fill="#0f1e10" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="975" y="174" text-anchor="middle" font-size="15">🏃</text>
+  <text x="975" y="189" text-anchor="middle" font-size="8.5" fill="#4ade80" font-weight="700">Runtime Security</text>
+  <text x="975" y="200" text-anchor="middle" font-size="7" fill="#2a5030">Falco · Tetragon · Wazuh</text>
+
+  <rect x="882" y="226" width="186" height="56" rx="7" fill="#0c1a20" stroke="#06b6d4" stroke-width="1.5"/>
+  <text x="975" y="248" text-anchor="middle" font-size="15">📡</text>
+  <text x="975" y="263" text-anchor="middle" font-size="8.5" fill="#22d3ee" font-weight="700">SBOM Monitoring</text>
+  <text x="975" y="274" text-anchor="middle" font-size="7" fill="#2a5060">Dependency-Track · Snyk</text>
+
+  <rect x="882" y="300" width="186" height="56" rx="7" fill="#1a0f10" stroke="#ef4444" stroke-width="1.5" filter="url(#glow-red)"/>
+  <text x="975" y="322" text-anchor="middle" font-size="15">🛡️</text>
+  <text x="975" y="337" text-anchor="middle" font-size="8.5" fill="#fca5a5" font-weight="700">WAF + DDoS</text>
+  <text x="975" y="348" text-anchor="middle" font-size="7" fill="#5a2020">Cloudflare · AWS WAF · NGFW</text>
+
+  <rect x="882" y="374" width="186" height="56" rx="7" fill="#100f1e" stroke="#818cf8" stroke-width="1.5"/>
+  <text x="975" y="396" text-anchor="middle" font-size="15">📊</text>
+  <text x="975" y="411" text-anchor="middle" font-size="8.5" fill="#a5b4fc" font-weight="700">SIEM</text>
+  <text x="975" y="422" text-anchor="middle" font-size="7" fill="#3a3a70">Splunk · Sentinel · Elastic</text>
+
+  <rect x="882" y="448" width="186" height="56" rx="7" fill="#1a0a10" stroke="#f43f5e" stroke-width="1.5"/>
+  <text x="975" y="470" text-anchor="middle" font-size="15">🔭</text>
+  <text x="975" y="485" text-anchor="middle" font-size="8.5" fill="#fda4af" font-weight="700">SOC 24/7</text>
+  <text x="975" y="496" text-anchor="middle" font-size="7" fill="#5a1a2a">Monitoramento · Incident Response</text>
+
+  <rect x="882" y="522" width="186" height="56" rx="7" fill="#1a1808" stroke="#eab308" stroke-width="1.5"/>
+  <text x="975" y="544" text-anchor="middle" font-size="15">🎯</text>
+  <text x="975" y="559" text-anchor="middle" font-size="8.5" fill="#fde047" font-weight="700">VAPT (Trimestral/Anual)</text>
+  <text x="975" y="570" text-anchor="middle" font-size="7" fill="#5a5010">Pentest · Red Team</text>
+
+  <rect x="882" y="596" width="186" height="56" rx="7" fill="#150a20" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="975" y="618" text-anchor="middle" font-size="15">📋</text>
+  <text x="975" y="633" text-anchor="middle" font-size="8.5" fill="#d8b4fe" font-weight="700">Compliance</text>
+  <text x="975" y="644" text-anchor="middle" font-size="7" fill="#5a2a80">PCI-DSS v4 · ISO 27001 · LGPD</text>
+
+  <rect x="882" y="670" width="186" height="40" rx="6" fill="#150a25" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="975" y="687" text-anchor="middle" font-size="8" fill="#c084fc">🛡️ Time de Segurança</text>
+  <text x="975" y="700" text-anchor="middle" font-size="7.5" fill="#7c3aed">CISO · SOC · Red Team</text>
+
+  <line x1="975" y1="134" x2="975" y2="152" stroke="#4f46e5" stroke-width="1" marker-end="url(#arr-purple)"/>
+  <line x1="975" y1="208" x2="975" y2="226" stroke="#22c55e" stroke-width="1" marker-end="url(#arr-green)"/>
+  <line x1="975" y1="282" x2="975" y2="300" stroke="#06b6d4" stroke-width="1" marker-end="url(#arr-cyan)"/>
+  <line x1="975" y1="356" x2="975" y2="374" stroke="#ef4444" stroke-width="1" marker-end="url(#arr-red)"/>
+  <line x1="975" y1="430" x2="975" y2="448" stroke="#818cf8" stroke-width="1" marker-end="url(#arr-purple)"/>
+  <line x1="975" y1="504" x2="975" y2="522" stroke="#f43f5e" stroke-width="1" marker-end="url(#arr-red)"/>
+  <line x1="975" y1="578" x2="975" y2="596" stroke="#eab308" stroke-width="1" marker-end="url(#arr-yellow)"/>
+  <line x1="975" y1="652" x2="975" y2="670" stroke="#a855f7" stroke-width="1" marker-end="url(#arr-purple)"/>
+
+  <line x1="856" y1="706" x2="880" y2="106" stroke="#4f46e5" stroke-width="1.5" marker-end="url(#arr-purple)" stroke-dasharray="5,3"/>
+  <rect x="808" y="400" width="60" height="14" rx="3" fill="#0a0e1a"/>
+  <text x="838" y="410" text-anchor="middle" font-size="8" fill="#818cf8">deploy</text>
+
+  <path d="M 882 254 Q 840 254 840 430 Q 840 580 520 590" fill="none" stroke="#06b6d4" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr-cyan)"/>
+  <rect x="804" y="330" width="90" height="20" rx="3" fill="#0a0e1a"/>
+  <text x="849" y="341" text-anchor="middle" font-size="7.5" fill="#06b6d4">📡 CVE novo detectado</text>
+  <text x="849" y="351" text-anchor="middle" font-size="7" fill="#06b6d4">alerta → squad</text>
+
+  <!-- LEGENDA -->
+  <rect x="20" y="386" width="210" height="244" rx="8" fill="#0c0f1e" stroke="#1e2240" stroke-width="1"/>
+  <text x="125" y="403" text-anchor="middle" font-size="9" fill="#4a5080" font-weight="700" letter-spacing="1">LEGENDA</text>
+  <line x1="34" y1="418" x2="70" y2="418" stroke="#3b82f6" stroke-width="2"/>
+  <text x="78" y="422" font-size="8.5" fill="#93c5fd">Dev Local / Push</text>
+  <line x1="34" y1="436" x2="70" y2="436" stroke="#22c55e" stroke-width="2"/>
+  <text x="78" y="440" font-size="8.5" fill="#4ade80">CI Pipeline</text>
+  <line x1="34" y1="454" x2="70" y2="454" stroke="#eab308" stroke-width="2"/>
+  <text x="78" y="458" font-size="8.5" fill="#fde047">Build / Artefato</text>
+  <line x1="34" y1="472" x2="70" y2="472" stroke="#f472b6" stroke-width="2"/>
+  <text x="78" y="476" font-size="8.5" fill="#f9a8d4">CD / Deploy</text>
+  <line x1="34" y1="490" x2="70" y2="490" stroke="#818cf8" stroke-width="2"/>
+  <text x="78" y="494" font-size="8.5" fill="#a5b4fc">Produção</text>
+  <line x1="34" y1="508" x2="70" y2="508" stroke="#06b6d4" stroke-width="2" stroke-dasharray="4,2"/>
+  <text x="78" y="512" font-size="8.5" fill="#22d3ee">SBOM feedback loop</text>
+  <line x1="34" y1="526" x2="70" y2="526" stroke="#7c3aed" stroke-width="2"/>
+  <text x="78" y="530" font-size="8.5" fill="#c084fc">🛡️ Time Segurança</text>
+  <rect x="34" y="542" width="58" height="14" rx="4" fill="rgba(239,68,68,0.15)"/>
+  <text x="63" y="553" text-anchor="middle" font-size="8" fill="#ef4444">🚫 Bloqueia</text>
+  <rect x="100" y="542" width="54" height="14" rx="4" fill="rgba(234,179,8,0.12)"/>
+  <text x="127" y="553" text-anchor="middle" font-size="8" fill="#d4a008">⚠️ Alerta</text>
+  <rect x="164" y="542" width="50" height="14" rx="4" fill="rgba(99,102,241,0.15)"/>
+  <text x="189" y="553" text-anchor="middle" font-size="8" fill="#818cf8">📊 Report</text>
+  <text x="34" y="576" font-size="8" fill="#4a5080" font-weight="700">SEVERIDADE → GATE:</text>
+  <text x="34" y="590" font-size="8" fill="#ef4444">● CRITICAL → Bloqueia sempre</text>
+  <text x="34" y="602" font-size="8" fill="#f97316">● HIGH → Bloqueia (maduro)</text>
+  <text x="34" y="614" font-size="8" fill="#eab308">● MEDIUM → Alerta / SLA 30d</text>
+  <text x="34" y="626" font-size="8" fill="#4ade80">● LOW → Revisão trimestral</text>
+</svg>
+</body>
+</html>

@@ -1,0 +1,138 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# TEMPLATE — GitLab CI Security Pipeline
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Este arquivo é um TEMPLATE DE REFERÊNCIA comentado.
+# Não ative diretamente sem antes:
+#   1. Configurar as CI/CD Variables no GitLab (Settings > CI/CD > Variables):
+#      - SONAR_HOST_URL    (URL do SonarQube — ex: https://sonarqube.empresa.com)
+#      - SONAR_TOKEN       (token de autenticação do SonarQube)
+#      - STAGING_URL       (URL do ambiente de staging para o DAST)
+#      - CI_REGISTRY_IMAGE (preenchida automaticamente pelo GitLab para projetos com registry)
+#   2. Garantir que a imagem do container esteja buildada antes do stage container-scan
+#   3. Remover os jobs que não se aplicam ao seu stack (ex: sonarqube se não tiver instância)
+#
+# Jobs incluídos:
+#   1. gitleaks      — Secret scanning em MR events
+#   2. semgrep       — SAST em MR events
+#   3. sonarqube     — SAST com quality gate em MR events (requer instância SonarQube)
+#   4. trivy-sca     — SCA + geração de SBOM CycloneDX em MR events
+#   5. trivy-container — Container image scan (apenas branch main)
+#   6. checkov       — IaC scan Terraform/K8s/Dockerfile em MR events
+#   7. owasp-zap     — DAST baseline scan (apenas branch main, requer STAGING_URL)
+# ─────────────────────────────────────────────────────────────────────────────
+
+stages:
+  - secret-scan
+  - sast
+  - sca-sbom
+  - container-scan
+  - iac-scan
+  - dast
+
+variables:
+  SEVERITY_THRESHOLD: "CRITICAL,HIGH"
+  IMAGE_NAME: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+
+# ─────────────────────────────────────────
+# 1. SECRET SCANNING — bloqueia secrets expostos
+# ─────────────────────────────────────────
+gitleaks:
+  stage: secret-scan
+  image: zricethezav/gitleaks:latest
+  script:
+    - gitleaks detect --source . --exit-code 1
+  allow_failure: false
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# ─────────────────────────────────────────
+# 2. SAST — Static Application Security Testing
+# ─────────────────────────────────────────
+semgrep:
+  stage: sast
+  image: returntocorp/semgrep:latest
+  script:
+    - semgrep ci --config=auto --severity=ERROR --error
+  allow_failure: false
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+sonarqube:
+  stage: sast
+  image:
+    name: sonarsource/sonar-scanner-cli:latest
+  variables:
+    SONAR_HOST_URL: "$SONAR_HOST_URL"
+    SONAR_TOKEN: "$SONAR_TOKEN"
+  script:
+    - sonar-scanner -Dsonar.qualitygate.wait=true
+  allow_failure: false
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# ─────────────────────────────────────────
+# 3. SCA + SBOM — Software Composition Analysis
+# ─────────────────────────────────────────
+trivy-sca:
+  stage: sca-sbom
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    # Gera SBOM em formato CycloneDX
+    - trivy fs . --format cyclonedx --output sbom.json
+    # Scan de vulnerabilidades — bloqueia CRITICAL e HIGH
+    - trivy fs . --exit-code 1 --severity $SEVERITY_THRESHOLD
+  artifacts:
+    paths:
+      - sbom.json
+    expire_in: 30 days
+  allow_failure: false
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# ─────────────────────────────────────────
+# 4. CONTAINER SCAN — imagem Docker
+# ─────────────────────────────────────────
+trivy-container:
+  stage: container-scan
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - trivy image --exit-code 1 --severity $SEVERITY_THRESHOLD $IMAGE_NAME
+  allow_failure: false
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ─────────────────────────────────────────
+# 5. IaC SCAN — Infrastructure as Code
+# ─────────────────────────────────────────
+checkov:
+  stage: iac-scan
+  image: bridgecrew/checkov:latest
+  script:
+    - checkov -d . --framework terraform,kubernetes,dockerfile --compact --quiet --hard-fail-on HIGH,CRITICAL
+  allow_failure: false
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# ─────────────────────────────────────────
+# 6. DAST — Dynamic Application Security Testing
+# Executa apenas em ambiente de staging
+# ─────────────────────────────────────────
+owasp-zap:
+  stage: dast
+  image: ghcr.io/zaproxy/zaproxy:stable
+  variables:
+    TARGET_URL: "$STAGING_URL"
+  script:
+    - zap-baseline.py -t $TARGET_URL -r zap-report.html -I -l WARN
+  artifacts:
+    paths:
+      - zap-report.html
+    expire_in: 30 days
+  allow_failure: true  # DAST gera falsos positivos — revisar relatório manualmente
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'

@@ -1,0 +1,142 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# .github/dependabot.yml — Configuração do Dependabot
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# O Dependabot monitora suas dependências e abre PRs automáticos quando:
+#   - Uma nova versão está disponível (version updates)
+#   - Uma CVE afeta uma dependência sua (security updates — automático)
+#
+# Documentação oficial: https://docs.github.com/en/code-security/dependabot
+# ─────────────────────────────────────────────────────────────────────────────
+
+version: 2
+
+updates:
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # GitHub Actions
+  # Mantém as actions do seu pipeline atualizadas.
+  # Importante: actions desatualizadas podem ter CVEs ou comportamentos
+  # deprecados. Pins por SHA são recomendados em ambientes de alta segurança.
+  # ───────────────────────────────────────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    directory: "/"                        # Pasta onde ficam os workflows (.github/workflows/)
+    schedule:
+      interval: "weekly"                  # Verifica toda semana
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    labels:
+      - "dependencies"
+      - "security"
+    commit-message:
+      prefix: "ci(deps)"
+    open-pull-requests-limit: 5
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # npm / Node.js
+  # Monitora package.json e package-lock.json.
+  # Ajuste o 'directory' para onde fica seu package.json (ex: "/frontend").
+  # ───────────────────────────────────────────────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    labels:
+      - "dependencies"
+      - "javascript"
+    commit-message:
+      prefix: "chore(deps)"
+    # Agrupa todas as atualizações de patch/minor em um único PR
+    # reduzindo o ruído de PRs individuais
+    groups:
+      npm-patch-minor:
+        update-types:
+          - "minor"
+          - "patch"
+    # Ignora major versions automaticamente — revisar manualmente
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    open-pull-requests-limit: 10
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Python (pip)
+  # Monitora requirements.txt, Pipfile, pyproject.toml ou setup.py.
+  # ───────────────────────────────────────────────────────────────────────────
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      pip-patch-minor:
+        update-types:
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 10
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Docker
+  # Monitora FROM nas instruções do Dockerfile.
+  # Mantém a imagem base atualizada — reduz CVEs na base do container.
+  # ───────────────────────────────────────────────────────────────────────────
+  - package-ecosystem: "docker"
+    directory: "/"                        # Ajuste para onde fica o Dockerfile
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "build(deps)"
+    open-pull-requests-limit: 5
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Terraform (opcional)
+  # Monitora versões de providers e módulos no seu código IaC.
+  # Descomente se o repositório tiver código Terraform.
+  # ───────────────────────────────────────────────────────────────────────────
+  # - package-ecosystem: "terraform"
+  #   directory: "/infra"                 # Ajuste para onde fica o código Terraform
+  #   schedule:
+  #     interval: "monthly"
+  #   labels:
+  #     - "dependencies"
+  #     - "terraform"
+  #   commit-message:
+  #     prefix: "chore(deps)"
+  #   open-pull-requests-limit: 5
+
+# ─────────────────────────────────────────────────────────────────────────────
+# BOAS PRÁTICAS COMPLEMENTARES
+#
+# 1. Security updates são automáticos e não precisam de config — basta ter
+#    o Dependabot habilitado em Settings > Security > Dependabot alerts.
+#
+# 2. Para ambientes de alta segurança, combine com:
+#    - Branch protection: exigir que o PR do Dependabot passe nos CI gates
+#    - Auto-merge: habilite apenas para patch + testes passando
+#      (use: https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions)
+#
+# 3. Pinning de actions por SHA (mais seguro que por tag):
+#    Em vez de: uses: actions/checkout@v4
+#    Use:       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+#    O Dependabot atualiza o SHA automaticamente quando há nova versão.
+#
+# 4. Revise o open-pull-requests-limit conforme a capacidade do time.
+#    Muitos PRs abertos simultaneamente geram ruído e podem ser ignorados.
+# ─────────────────────────────────────────────────────────────────────────────

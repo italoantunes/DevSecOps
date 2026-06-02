@@ -1,0 +1,134 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# TEMPLATE — GitHub Actions Security Pipeline
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Este arquivo é um TEMPLATE DE REFERÊNCIA comentado.
+# Não ative diretamente sem antes:
+#   1. Configurar os secrets necessários no repositório:
+#      - SEMGREP_APP_TOKEN  (obter em semgrep.dev)
+#      - STAGING_URL        (URL do ambiente de staging para o DAST)
+#   2. Garantir que exista um Dockerfile na raiz (para o job container-scan)
+#   3. Remover os jobs que não se aplicam ao seu stack
+#
+# Jobs incluídos:
+#   1. secret-scan    — Gitleaks (todos os PRs e pushes para main)
+#   2. sast           — Semgrep (todos os PRs e pushes para main)
+#   3. sca-sbom       — Trivy filesystem scan + geração de SBOM CycloneDX
+#   4. iac-scan       — Checkov (Terraform, Kubernetes, Dockerfile)
+#   5. container-scan — Trivy image scan (apenas main, requer Dockerfile)
+#   6. dast           — OWASP ZAP baseline (apenas main, requer STAGING_URL)
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Security Pipeline
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+
+jobs:
+
+  # ─────────────────────────────────────────
+  # 1. SECRET SCANNING
+  # ─────────────────────────────────────────
+  secret-scan:
+    name: Secret Scanning (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ─────────────────────────────────────────
+  # 2. SAST — Static Application Security Testing
+  # ─────────────────────────────────────────
+  sast:
+    name: SAST (Semgrep)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: returntocorp/semgrep-action@v1
+        with:
+          config: auto
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+  # ─────────────────────────────────────────
+  # 3. SCA + SBOM — Software Composition Analysis
+  # ─────────────────────────────────────────
+  sca-sbom:
+    name: SCA + SBOM (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Gerar SBOM (CycloneDX)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          format: cyclonedx
+          output: sbom.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+
+      - name: SCA — Bloqueia CRITICAL e HIGH
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          exit-code: 1
+          severity: CRITICAL,HIGH
+
+  # ─────────────────────────────────────────
+  # 4. IaC SCAN — Infrastructure as Code
+  # ─────────────────────────────────────────
+  iac-scan:
+    name: IaC Scan (Checkov)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: terraform,kubernetes,dockerfile
+          soft_fail: false
+
+  # ─────────────────────────────────────────
+  # 5. CONTAINER SCAN
+  # ─────────────────────────────────────────
+  container-scan:
+    name: Container Scan (Trivy)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t app:${{ github.sha }} .
+      - name: Scan imagem
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: app:${{ github.sha }}
+          exit-code: 1
+          severity: CRITICAL,HIGH
+
+  # ─────────────────────────────────────────
+  # 6. DAST — Dynamic Application Security Testing
+  # Executa apenas na main (staging)
+  # ─────────────────────────────────────────
+  dast:
+    name: DAST (OWASP ZAP)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.11.0
+        with:
+          target: ${{ secrets.STAGING_URL }}
+          fail_action: false   # Revisar relatório manualmente
