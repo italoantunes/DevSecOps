@@ -12,15 +12,12 @@
 ## O Fluxo Completo
 
 ```
-  DEV LOCAL                     CI — roda a cada Push / Pull Request              CD / PRODUÇÃO
-┌─────────────────┐   ┌────────────────────────────────────────────┐   ┌─────────────────────┐
-│                 │   │                                            │   │                     │
-│  IDE            │   │  Secret   SAST    SCA +   Container  IaC  │   │  DAST    Runtime    │
-│  Pre-commit ────┼───┼──Scan ────────────SBOM ───Scan ──────Scan─┼───┼──Scan    Monit.     │
-│                 │   │                                            │   │                     │
-└─────────────────┘   └────────────────────────────────────────────┘   └─────────────────────┘
+  DEV LOCAL            CI — roda a cada Push / Pull Request             CD / PRODUÇÃO
+  ─────────────────    ─────────────────────────────────────────────    ──────────────
 
- 01-ide-precommit    02   03     04         05          06            07        08
+  [01]          [02]      [03]    [04]       [05]       [06]      [07]     [08]
+  IDE      →  Secret  →  SAST  →  SCA   →  Container →  IaC  →  DAST  →  Runtime
+  Pre-commit   Scan              SBOM       Scan        Scan     Scan      Monit.
 ```
 
 Cada etapa tem um **gate de segurança**:
