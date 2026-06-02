@@ -1,70 +1,87 @@
 # ✅ Checklist de Segurança — Pull Request
 
-> Use este checklist antes de abrir ou aprovar qualquer PR em repositórios que impactam ambientes produtivos.
+> **Quando usar:**
+> Antes de abrir ou aprovar qualquer Pull Request em repositórios que afetam ambientes produtivos.
+>
+> **Como usar no GitHub:**
+> Copie o conteúdo para um arquivo `.github/pull_request_template.md` no repositório da aplicação.
+> O GitHub preencherá automaticamente o corpo de cada novo PR com este checklist.
+>
+> **Checklist completo do pipeline (9 etapas):** [`security-checklist.md`](./security-checklist.md)
 
 ---
 
-## 🔑 Segredos e Credenciais
+## 🔑 Secrets e Credenciais
+
+> Por que importa: uma senha ou token commitado no código é um incidente de segurança — mesmo que apagado depois, fica no histórico do Git.
 
 - [ ] Nenhuma credencial, token, API key ou senha hardcoded no código
 - [ ] Nenhum arquivo `.env` com valores reais commitado
-- [ ] Variáveis sensíveis estão em secret manager (AWS Secrets Manager, Vault, GitLab CI Secrets)
-- [ ] O scan do Gitleaks não apontou nenhum finding
+- [ ] Variáveis sensíveis estão em secret manager (AWS Secrets Manager, Vault, CI Secrets)
+- [ ] O scan do Gitleaks no pipeline passou sem findings
 
 ---
 
-## 🧪 SAST — Static Application Security Testing
+## 🧪 SAST — Análise Estática
+
+> Por que importa: o pipeline de SAST detecta vulnerabilidades no código antes que cheguem à main.
 
 - [ ] Pipeline de SAST executou sem findings CRITICAL
-- [ ] Findings HIGH foram avaliados e documentados (aceito com justificativa ou corrigido)
-- [ ] Nenhuma injeção (SQL, Command, LDAP) introduzida
+- [ ] Findings HIGH foram avaliados: corrigidos ou documentados com justificativa
+- [ ] Nenhuma injeção introduzida (SQL, Command, LDAP)
 - [ ] Inputs do usuário estão sendo validados e sanitizados
-- [ ] Nenhuma serialização/deserialização insegura
+- [ ] Sem serialização / deserialização insegura
 
 ---
 
-## 📦 SCA + SBOM — Dependências
+## 📦 Dependências (SCA)
+
+> Por que importa: você é responsável pelas CVEs das bibliotecas que adiciona ao projeto.
 
 - [ ] Nenhuma dependência nova com CVE CRITICAL ou HIGH não mitigado
-- [ ] SBOM (Software Bill of Materials) gerado e arquivado
-- [ ] Licenças das novas dependências são compatíveis com a política da empresa
+- [ ] SBOM gerado e arquivado no CI
+- [ ] Licenças das novas dependências são compatíveis com a política
 - [ ] Dependências fixadas em versão específica (sem `latest` ou ranges abertos)
 
 ---
 
-## 🌐 Segurança de API e Web
+## 🌐 API e Segurança Web
+
+> Por que importa: endpoints sem autenticação ou com dados expostos são as vulnerabilidades mais exploradas.
 
 - [ ] Endpoints novos têm autenticação e autorização adequadas
-- [ ] Controle de acesso segue o princípio de menor privilégio
-- [ ] Dados sensíveis não estão sendo expostos em logs ou respostas de erro
+- [ ] Controle de acesso segue menor privilégio — usuário só acessa o que é dele
+- [ ] Dados sensíveis não aparecem em logs ou mensagens de erro
 - [ ] Headers de segurança configurados (CORS, CSP, X-Frame-Options)
-- [ ] Rate limiting aplicado em endpoints críticos
+- [ ] Rate limiting aplicado em endpoints de autenticação e ações críticas
 
 ---
 
-## 🏗️ IaC — Infrastructure as Code
+## 🏗️ IaC — Infraestrutura como Código
 
-- [ ] Checkov/tfsec executou sem findings CRITICAL
+> Por que importa: uma linha errada no Terraform pode expor um banco de dados para a internet.
+
+- [ ] Checkov executou sem findings CRITICAL
 - [ ] Nenhum Security Group com `0.0.0.0/0` em portas não justificadas
-- [ ] Buckets S3 / Storage não estão públicos sem necessidade
-- [ ] Criptografia em repouso habilitada nos recursos de dados
+- [ ] Recursos de dados com criptografia em repouso habilitada
 - [ ] Logs e auditoria habilitados nos novos recursos
 
 ---
 
 ## 🐳 Containers
 
-- [ ] Imagem base atualizada (não usa `latest`)
-- [ ] Container roda como non-root
-- [ ] Scan de imagem executou sem CVEs CRITICAL
-- [ ] Filesystem read-only onde possível
+> Por que importa: container mal configurado amplifica o impacto de qualquer exploração.
+
+- [ ] Imagem base com versão fixada (não usa `latest`)
+- [ ] Container configurado para rodar como non-root
+- [ ] Scan da imagem executou sem CVEs CRITICAL
 - [ ] Secrets não passados como variável de ambiente em plain text
 
 ---
 
-## 📋 Geral
+## 📋 Revisão Geral
 
 - [ ] Mudanças revisadas por pelo menos um par técnico
-- [ ] Documentação atualizada se houver mudança de comportamento
-- [ ] Testes unitários/integração cobrindo o novo código
-- [ ] Nenhum código de debug ou `TODO` de segurança pendente
+- [ ] Documentação atualizada se houver mudança de comportamento ou interface
+- [ ] Testes cobrindo os novos caminhos de código
+- [ ] Sem código de debug ou comentários `// TODO: fix security` pendentes

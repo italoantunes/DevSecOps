@@ -1,3 +1,53 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# TEMPLATE — GitLab CI/CD Security Pipeline
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# O QUE É ESTE ARQUIVO?
+#   Um pipeline de segurança para GitLab CI/CD que integra automaticamente
+#   múltiplas ferramentas de segurança em cada Merge Request e Push.
+#   É um TEMPLATE — não roda aqui neste repositório, mas deve ser copiado
+#   para a RAIZ do repositório da aplicação que você quer proteger.
+#   Quando presente na raiz, o GitLab lê e executa automaticamente — sem
+#   nenhuma ação manual necessária.
+#
+# O QUE ELE FAZ?
+#   Executa 7 etapas de segurança em sequência:
+#   1. Secret Scanning    — detecta senhas/tokens expostos no código
+#   2. SAST (Semgrep)     — analisa vulnerabilidades no código-fonte
+#   3. SAST (SonarQube)   — análise de qualidade + segurança com quality gate
+#   4. SCA + SBOM         — verifica CVEs nas dependências e gera inventário
+#   5. Container Scan     — escaneia a imagem Docker gerada
+#   6. IaC Scan           — valida Terraform, Kubernetes, Dockerfiles
+#   7. DAST               — testa ataques reais contra o staging
+#
+# ONDE ELE RODA?
+#   No GitLab CI/CD — disparado automaticamente em cada Merge Request
+#   e Push para a branch main. Não é executado manualmente.
+#
+# COMO USAR?
+#   1. Copie este arquivo para a RAIZ do repositório da aplicação como:
+#      .gitlab-ci.yml
+#   2. Configure as CI/CD Variables no GitLab:
+#      Settings → CI/CD → Variables → Add variable
+#      - SONAR_HOST_URL : URL do SonarQube (ex: https://sonarqube.empresa.com)
+#      - SONAR_TOKEN    : token de autenticação do SonarQube
+#      - STAGING_URL    : URL do ambiente de staging (ex: https://staging.suaapp.com)
+#   3. Se não tiver SonarQube, comente ou remova o job "sonarqube"
+#   4. Se não tiver Dockerfile ou registry configurado, remova "trivy-container"
+#   5. Se não tiver staging, remova "owasp-zap"
+#   6. Abra um Merge Request — o pipeline dispara automaticamente
+#
+# GANHOS?
+#   - Problemas de segurança bloqueados antes do merge, não depois do deploy
+#   - SBOM gerado e arquivado automaticamente em cada build
+#   - Rastreabilidade: cada MR tem seu relatório de segurança
+#   - Integração com o GitLab Security Dashboard (se licença Ultimate)
+#
+# PARA ENTENDER CADA ETAPA EM DETALHE:
+#   /01-ide-precommit, /02-secret-scan, /03-sast, /04-sca-sbom,
+#   /05-container-scan, /06-iac-security, /07-dast
+# ─────────────────────────────────────────────────────────────────────────────
+
 stages:
   - secret-scan
   - sast
@@ -10,9 +60,16 @@ variables:
   SEVERITY_THRESHOLD: "CRITICAL,HIGH"
   IMAGE_NAME: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
 
-# ─────────────────────────────────────────
-# 1. SECRET SCANNING — bloqueia secrets expostos
-# ─────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. SECRET SCANNING — Gitleaks
+# ─────────────────────────────────────────────────────────────────────────────
+# O que faz: varre TODO o código do repositório procurando por senhas, tokens
+#            de API, chaves privadas e outros segredos expostos. Usa biblioteca
+#            de +150 padrões conhecidos (AWS, GitHub, Stripe, Google, etc.)
+# Quando dispara: em todo Merge Request
+# O que bloqueia: qualquer secret encontrado (allow_failure: false)
+# Documentação: /02-secret-scan/README.md
+# ─────────────────────────────────────────────────────────────────────────────
 gitleaks:
   stage: secret-scan
   image: zricethezav/gitleaks:latest
@@ -22,9 +79,17 @@ gitleaks:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
-# ─────────────────────────────────────────
-# 2. SAST — Static Application Security Testing
-# ─────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. SAST — Semgrep
+# ─────────────────────────────────────────────────────────────────────────────
+# O que faz: analisa o código-fonte sem executar a aplicação. Detecta SQL
+#            Injection, XSS, Command Injection, path traversal, criptografia
+#            fraca, secrets hardcoded e centenas de padrões do OWASP Top 10.
+#            Suporta Python, JavaScript, Java, Go, PHP, Ruby e outras.
+# Quando dispara: em todo Merge Request
+# O que bloqueia: findings com severidade ERROR (CRITICAL/HIGH)
+# Documentação: /03-sast/README.md
+# ─────────────────────────────────────────────────────────────────────────────
 semgrep:
   stage: sast
   image: returntocorp/semgrep:latest
@@ -34,6 +99,19 @@ semgrep:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. SAST — SonarQube
+# ─────────────────────────────────────────────────────────────────────────────
+# O que faz: análise mais ampla que o Semgrep — combina segurança, qualidade
+#            de código, cobertura de testes e débito técnico. O Quality Gate
+#            bloqueia o MR se o código não atender aos critérios mínimos
+#            configurados no SonarQube.
+# Quando dispara: em todo Merge Request
+# O que bloqueia: Quality Gate do SonarQube (configurado no servidor)
+# Pré-requisito: SONAR_HOST_URL e SONAR_TOKEN nas CI Variables.
+#                Remova este job se não tiver uma instância SonarQube.
+# Documentação: /03-sast/README.md
+# ─────────────────────────────────────────────────────────────────────────────
 sonarqube:
   stage: sast
   image:
@@ -47,20 +125,31 @@ sonarqube:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
-# ─────────────────────────────────────────
-# 3. SCA + SBOM — Software Composition Analysis
-# ─────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. SCA + SBOM — Trivy
+# ─────────────────────────────────────────────────────────────────────────────
+# O que faz:
+#   PARTE 1 — Gera o SBOM (Software Bill of Materials): inventário completo
+#   de todas as bibliotecas, incluindo transitivas. Arquivado como artifact
+#   por 30 dias para auditoria e rastreabilidade.
+#
+#   PARTE 2 — SCA: verifica as dependências contra bases de CVE (NVD, OSV,
+#   GitHub Advisory Database) e bloqueia se encontrar CRITICAL ou HIGH.
+#
+# Quando dispara: em todo Merge Request
+# O que bloqueia: CVE CRITICAL ou HIGH nas dependências
+# Documentação: /04-sca-sbom/README.md
+# ─────────────────────────────────────────────────────────────────────────────
 trivy-sca:
   stage: sca-sbom
   image:
     name: aquasec/trivy:latest
     entrypoint: [""]
   script:
-    # Gera SBOM em formato CycloneDX
     - trivy fs . --format cyclonedx --output sbom.json
-    # Scan de vulnerabilidades — bloqueia CRITICAL e HIGH
     - trivy fs . --exit-code 1 --severity $SEVERITY_THRESHOLD
   artifacts:
+    name: sbom-$CI_COMMIT_SHORT_SHA
     paths:
       - sbom.json
     expire_in: 30 days
@@ -68,9 +157,18 @@ trivy-sca:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
-# ─────────────────────────────────────────
-# 4. CONTAINER SCAN — imagem Docker
-# ─────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. CONTAINER SCAN — Trivy
+# ─────────────────────────────────────────────────────────────────────────────
+# O que faz: escaneia a imagem Docker já publicada no GitLab Container Registry.
+#            Verifica as camadas do sistema operacional (openssl, libc, curl...)
+#            que o SCA da etapa anterior não cobre.
+# Quando dispara: apenas em push para a branch main
+# O que bloqueia: CVE CRITICAL ou HIGH na imagem
+# Pré-requisito: IMAGE_NAME deve apontar para uma imagem já buildada e enviada
+#                ao registry. Remova este job se não usar containers.
+# Documentação: /05-container-scan/README.md
+# ─────────────────────────────────────────────────────────────────────────────
 trivy-container:
   stage: container-scan
   image:
@@ -82,9 +180,17 @@ trivy-container:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# ─────────────────────────────────────────
-# 5. IaC SCAN — Infrastructure as Code
-# ─────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# 6. IaC SCAN — Checkov
+# ─────────────────────────────────────────────────────────────────────────────
+# O que faz: varre arquivos Terraform, Kubernetes YAML, Helm charts e
+#            Dockerfiles em busca de configurações inseguras: buckets públicos,
+#            security groups abertos, containers como root, criptografia
+#            desabilitada, secrets em plain text, e mais de 1.000 políticas.
+# Quando dispara: em todo Merge Request
+# O que bloqueia: findings HIGH ou CRITICAL
+# Documentação: /06-iac-security/README.md
+# ─────────────────────────────────────────────────────────────────────────────
 checkov:
   stage: iac-scan
   image: bridgecrew/checkov:latest
@@ -94,10 +200,22 @@ checkov:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
-# ─────────────────────────────────────────
-# 6. DAST — Dynamic Application Security Testing
-# Executa apenas em ambiente de staging
-# ─────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# 7. DAST — OWASP ZAP
+# ─────────────────────────────────────────────────────────────────────────────
+# O que faz: testa a aplicação EM EXECUÇÃO fazendo requisições HTTP reais
+#            contra o staging, simulando o que um atacante externo faria.
+#            Testa: autenticação, autorização, XSS, injeção, headers de
+#            segurança, configuração do servidor, rate limiting e outros.
+#            O relatório HTML é arquivado como artifact da run.
+# Quando dispara: apenas em push para main, contra STAGING
+# O que bloqueia: allow_failure: true — revisar o relatório manualmente.
+#                 O ZAP gera falsos positivos. Calibre as regras antes de
+#                 habilitar como bloqueante (mude para allow_failure: false).
+# IMPORTANTE: NUNCA aponte TARGET_URL para produção. Apenas staging.
+# Pré-requisito: STAGING_URL nas CI Variables. Remova se não tiver staging.
+# Documentação: /07-dast/README.md
+# ─────────────────────────────────────────────────────────────────────────────
 owasp-zap:
   stage: dast
   image: ghcr.io/zaproxy/zaproxy:stable
@@ -106,9 +224,10 @@ owasp-zap:
   script:
     - zap-baseline.py -t $TARGET_URL -r zap-report.html -I -l WARN
   artifacts:
+    name: zap-report-$CI_COMMIT_SHORT_SHA
     paths:
       - zap-report.html
     expire_in: 30 days
-  allow_failure: true  # DAST gera falsos positivos — revisar relatório manualmente
+  allow_failure: true   # DAST gera falsos positivos — revisar relatório antes de tornar bloqueante
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'

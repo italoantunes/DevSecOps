@@ -1,3 +1,48 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# TEMPLATE — GitHub Actions Security Pipeline
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# O QUE É ESTE ARQUIVO?
+#   Um workflow de segurança para GitHub Actions que integra automaticamente
+#   múltiplas ferramentas de segurança em cada Pull Request e Push.
+#   É um TEMPLATE — não roda aqui neste repositório, mas deve ser copiado
+#   para o repositório da aplicação que você quer proteger.
+#
+# O QUE ELE FAZ?
+#   Executa 6 etapas de segurança automaticamente:
+#   1. Secret Scanning    — detecta senhas/tokens expostos no código
+#   2. SAST               — analisa vulnerabilidades no código-fonte
+#   3. SCA + SBOM         — verifica CVEs nas dependências e gera inventário
+#   4. IaC Scan           — valida Terraform, Kubernetes, Dockerfiles
+#   5. Container Scan     — escaneia a imagem Docker gerada
+#   6. DAST               — testa ataques reais contra o staging
+#
+# ONDE ELE RODA?
+#   No GitHub Actions — disparado automaticamente em cada Pull Request
+#   e Push para a branch main. Não é executado manualmente.
+#
+# COMO USAR?
+#   1. Copie este arquivo para: .github/workflows/security.yml
+#      no repositório da SUA APLICAÇÃO (não neste repo)
+#   2. Configure os Secrets necessários no GitHub:
+#      Settings → Secrets and variables → Actions → New repository secret
+#      - SEMGREP_APP_TOKEN : token do Semgrep (semgrep.dev → Settings → Tokens)
+#      - STAGING_URL       : URL do seu ambiente de staging (ex: https://staging.suaapp.com)
+#   3. Se não tiver Dockerfile no repositório, remova o job "container-scan"
+#   4. Se não tiver ambiente de staging, remova o job "dast"
+#   5. Abra um Pull Request — o pipeline dispara automaticamente
+#
+# GANHOS?
+#   - Problemas de segurança bloqueados antes do merge, não depois do deploy
+#   - Nenhum developer precisa rodar nada manualmente
+#   - SBOM gerado automaticamente em cada build
+#   - DAST testa sua aplicação como um atacante real faria
+#
+# PARA ENTENDER CADA ETAPA EM DETALHE:
+#   /01-ide-precommit, /02-secret-scan, /03-sast, /04-sca-sbom,
+#   /05-container-scan, /06-iac-security, /07-dast
+# ─────────────────────────────────────────────────────────────────────────────
+
 name: Security Pipeline
 
 on:
@@ -8,23 +53,40 @@ on:
 
 jobs:
 
-  # ─────────────────────────────────────────
-  # 1. SECRET SCANNING
-  # ─────────────────────────────────────────
+  # ─────────────────────────────────────────────────────────────────────────
+  # 1. SECRET SCANNING — Gitleaks
+  # ─────────────────────────────────────────────────────────────────────────
+  # O que faz: varre TODO o histórico do repositório procurando por senhas,
+  #            tokens de API, chaves privadas e outros segredos expostos.
+  #            Usa uma biblioteca de +150 padrões conhecidos (AWS, GitHub,
+  #            Stripe, Google, etc.)
+  # Quando dispara: em todo PR e push para main
+  # O que bloqueia: qualquer secret encontrado bloqueia o merge
+  # Documentação: /02-secret-scan/README.md
+  # ─────────────────────────────────────────────────────────────────────────
   secret-scan:
     name: Secret Scanning (Gitleaks)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0          # fetch-depth: 0 = baixa todo o histórico do git
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # ─────────────────────────────────────────
-  # 2. SAST — Static Application Security Testing
-  # ─────────────────────────────────────────
+  # ─────────────────────────────────────────────────────────────────────────
+  # 2. SAST — Semgrep
+  # ─────────────────────────────────────────────────────────────────────────
+  # O que faz: analisa o código-fonte em busca de vulnerabilidades conhecidas
+  #            sem executar a aplicação. Detecta SQL Injection, XSS, Command
+  #            Injection, path traversal, criptografia fraca, e centenas de
+  #            outros padrões do OWASP Top 10.
+  # Quando dispara: em todo PR e push para main
+  # O que bloqueia: findings com severidade ERROR (mapeado para CRITICAL/HIGH)
+  # Documentação: /03-sast/README.md
+  # Pré-requisito: SEMGREP_APP_TOKEN no GitHub Secrets
+  # ─────────────────────────────────────────────────────────────────────────
   sast:
     name: SAST (Semgrep)
     runs-on: ubuntu-latest
@@ -32,13 +94,27 @@ jobs:
       - uses: actions/checkout@v4
       - uses: returntocorp/semgrep-action@v1
         with:
-          config: auto
+          config: auto            # detecta linguagens do repo e aplica regras relevantes
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
-  # ─────────────────────────────────────────
-  # 3. SCA + SBOM — Software Composition Analysis
-  # ─────────────────────────────────────────
+  # ─────────────────────────────────────────────────────────────────────────
+  # 3. SCA + SBOM — Trivy
+  # ─────────────────────────────────────────────────────────────────────────
+  # O que faz:
+  #   PARTE 1 — Gera o SBOM (Software Bill of Materials): inventário completo
+  #   de todas as bibliotecas e dependências do projeto, incluindo transitivas.
+  #   O SBOM fica arquivado como artefato da run e pode ser usado para
+  #   rastrear quais versões têm uma CVE específica.
+  #
+  #   PARTE 2 — SCA (Software Composition Analysis): escaneia as dependências
+  #   contra bases de dados de CVEs (NVD, OSV, GitHub Advisory Database) e
+  #   bloqueia se encontrar CRITICAL ou HIGH sem mitigação.
+  #
+  # Quando dispara: em todo PR e push para main
+  # O que bloqueia: CVE CRITICAL ou HIGH nas dependências
+  # Documentação: /04-sca-sbom/README.md
+  # ─────────────────────────────────────────────────────────────────────────
   sca-sbom:
     name: SCA + SBOM (Trivy)
     runs-on: ubuntu-latest
@@ -52,22 +128,32 @@ jobs:
           format: cyclonedx
           output: sbom.json
 
-      - name: Upload SBOM
+      - name: Arquivar SBOM como artefato da run
         uses: actions/upload-artifact@v4
         with:
-          name: sbom
+          name: sbom-${{ github.sha }}
           path: sbom.json
+          retention-days: 90      # retém por 90 dias para auditoria
 
-      - name: SCA — Bloqueia CRITICAL e HIGH
+      - name: SCA — Bloquear CRITICAL e HIGH
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
-          exit-code: 1
+          exit-code: 1            # exit-code 1 = falha o pipeline se encontrar
           severity: CRITICAL,HIGH
 
-  # ─────────────────────────────────────────
-  # 4. IaC SCAN — Infrastructure as Code
-  # ─────────────────────────────────────────
+  # ─────────────────────────────────────────────────────────────────────────
+  # 4. IaC SCAN — Checkov
+  # ─────────────────────────────────────────────────────────────────────────
+  # O que faz: varre arquivos de infraestrutura como código — Terraform,
+  #            Kubernetes YAML, Helm charts e Dockerfile — em busca de
+  #            configurações inseguras: buckets S3 públicos, security groups
+  #            abertos, containers rodando como root, secrets em plain text,
+  #            criptografia desabilitada, e mais de 1.000 outras políticas.
+  # Quando dispara: em todo PR e push para main
+  # O que bloqueia: qualquer finding de severidade HIGH ou CRITICAL
+  # Documentação: /06-iac-security/README.md
+  # ─────────────────────────────────────────────────────────────────────────
   iac-scan:
     name: IaC Scan (Checkov)
     runs-on: ubuntu-latest
@@ -77,37 +163,63 @@ jobs:
         with:
           directory: .
           framework: terraform,kubernetes,dockerfile
-          soft_fail: false
+          soft_fail: false        # false = bloqueia o PR se encontrar problemas
 
-  # ─────────────────────────────────────────
-  # 5. CONTAINER SCAN
-  # ─────────────────────────────────────────
+  # ─────────────────────────────────────────────────────────────────────────
+  # 5. CONTAINER SCAN — Trivy
+  # ─────────────────────────────────────────────────────────────────────────
+  # O que faz: constrói a imagem Docker do projeto e escaneia todas as camadas
+  #            da imagem — sistema operacional, pacotes do OS, dependências da
+  #            aplicação. Encontra CVEs que o SCA da etapa 3 não cobre porque
+  #            estão nas camadas do sistema operacional (openssl, libc, curl...).
+  # Quando dispara: apenas em push para main (imagem só é buildada na main)
+  # O que bloqueia: CVE CRITICAL ou HIGH na imagem
+  # Pré-requisito: Dockerfile na raiz do repositório.
+  #                Se não tiver Dockerfile, remova este job inteiro.
+  # Documentação: /05-container-scan/README.md
+  # ─────────────────────────────────────────────────────────────────────────
   container-scan:
     name: Container Scan (Trivy)
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'     # só roda na main
     steps:
       - uses: actions/checkout@v4
-      - name: Build image
+
+      - name: Build da imagem Docker
         run: docker build -t app:${{ github.sha }} .
-      - name: Scan imagem
+
+      - name: Scan da imagem
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: app:${{ github.sha }}
           exit-code: 1
           severity: CRITICAL,HIGH
 
-  # ─────────────────────────────────────────
-  # 6. DAST — Dynamic Application Security Testing
-  # Executa apenas na main (staging)
-  # ─────────────────────────────────────────
+  # ─────────────────────────────────────────────────────────────────────────
+  # 6. DAST — OWASP ZAP
+  # ─────────────────────────────────────────────────────────────────────────
+  # O que faz: testa a aplicação EM EXECUÇÃO simulando ataques reais.
+  #            Diferente do SAST (que lê o código), o DAST faz requisições HTTP
+  #            reais contra o staging e tenta explorar vulnerabilidades como
+  #            um atacante externo faria. Testa: autenticação, autorização,
+  #            XSS, injeção, headers de segurança, rate limiting, IDOR, e mais.
+  # Quando dispara: apenas em push para main, contra o ambiente de STAGING
+  # O que bloqueia: fail_action está como false — revisar manualmente o relatório.
+  #                 Mude para true depois de calibrar as regras e eliminar
+  #                 os falsos positivos conhecidos.
+  # IMPORTANTE: NUNCA aponte o DAST para produção. Apenas staging.
+  # Pré-requisito: STAGING_URL no GitHub Secrets.
+  #                Se não tiver staging, remova este job inteiro.
+  # Documentação: /07-dast/README.md
+  # ─────────────────────────────────────────────────────────────────────────
   dast:
     name: DAST (OWASP ZAP)
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'     # só roda na main
     steps:
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.11.0
         with:
           target: ${{ secrets.STAGING_URL }}
-          fail_action: false   # Revisar relatório manualmente
+          fail_action: false      # false = não bloqueia automaticamente, gera relatório para revisão
+          artifact_name: zap-security-report
