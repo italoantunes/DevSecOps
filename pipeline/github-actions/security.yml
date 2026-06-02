@@ -1,24 +1,3 @@
-# ─────────────────────────────────────────────────────────────────────────────
-# TEMPLATE — GitHub Actions Security Pipeline
-# ─────────────────────────────────────────────────────────────────────────────
-#
-# Este arquivo é um TEMPLATE DE REFERÊNCIA comentado.
-# Não ative diretamente sem antes:
-#   1. Configurar os secrets necessários no repositório:
-#      - SEMGREP_APP_TOKEN  (obter em semgrep.dev)
-#      - STAGING_URL        (URL do ambiente de staging para o DAST)
-#   2. Garantir que exista um Dockerfile na raiz (para o job container-scan)
-#   3. Remover os jobs que não se aplicam ao seu stack
-#
-# Jobs incluídos:
-#   1. secret-scan    — Gitleaks (todos os PRs e pushes para main)
-#   2. sast           — Semgrep (todos os PRs e pushes para main)
-#   3. sca-sbom       — Trivy filesystem scan + geração de SBOM CycloneDX
-#   4. iac-scan       — Checkov (Terraform, Kubernetes, Dockerfile)
-#   5. container-scan — Trivy image scan (apenas main, requer Dockerfile)
-#   6. dast           — OWASP ZAP baseline (apenas main, requer STAGING_URL)
-# ─────────────────────────────────────────────────────────────────────────────
-
 name: Security Pipeline
 
 on:

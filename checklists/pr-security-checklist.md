@@ -1,7 +1,6 @@
 # ✅ Checklist de Segurança — Pull Request
 
-> **Quando usar:** Antes de abrir ou aprovar qualquer PR. Cole como template no corpo do PR no GitHub (Settings > General > Pull request template).
-> Para o mapa completo do pipeline de segurança, veja [`security-checklist.md`](./security-checklist.md).
+> Use este checklist antes de abrir ou aprovar qualquer PR em repositórios que impactam ambientes produtivos.
 
 ---
 

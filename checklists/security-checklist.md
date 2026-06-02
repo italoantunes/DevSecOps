@@ -1,9 +1,7 @@
-# ✅ Security Checklist — Mapa Completo do Pipeline
+# ✅ Security Checklist — DevSecOps
+### Do código ao deploy: validações de segurança em cada etapa
 
-> **Quando usar:** Referência de estudo, onboarding de novos membros, ou auditoria completa do processo de segurança da squad.
-> Para uso no dia a dia, utilize os checklists focados: [`pr-security-checklist.md`](./pr-security-checklist.md) e [`deploy-security-checklist.md`](./deploy-security-checklist.md)
-
-> Versão: 1.1 | Referência: OWASP Top 10 · NIST SP 800-218 (SSDF) · CIS Controls v8
+> Versão: 1.0 | Referência: OWASP Top 10 · NIST SP 800-218 (SSDF) · CIS Controls v8
 
 ---
 

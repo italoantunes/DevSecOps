@@ -1,7 +1,6 @@
 # 🚀 Checklist de Segurança — Deploy para Produção
 
-> **Quando usar:** Gate final antes de promover qualquer artefato para produção. Use em conjunto com seu processo de Change Management (CAB, runbook de deploy).
-> Para o mapa completo do pipeline de segurança, veja [`security-checklist.md`](./security-checklist.md).
+> Validações obrigatórias antes de qualquer deploy em ambiente produtivo.
 
 ---
 
@@ -25,11 +24,10 @@
 
 ---
 
-## 📱 Se aplicável — Mobile / Container / Serverless
+## 📱 Container / Serverless
 
 - [ ] Imagem container escaneada e aprovada
 - [ ] Lambda / função serverless com permissões mínimas (IAM least privilege)
-- [ ] App mobile sem dados sensíveis armazenados localmente sem criptografia
 
 ---
 
